@@ -1,0 +1,30 @@
+/* Theming foundation for the UI Scene Animator window.
+   Loaded onto the window root; class hooks are applied in code. Inline styles
+   still drive most layout today - this sheet is the staged migration target so
+   colors/spacing can be tuned in one place and themed without recompiling. */
+
+.usa-root {
+    --usa-panel: rgb(43, 43, 51);
+    --usa-accent: rgb(77, 128, 217);
+}
+
+.usa-card {
+    background-color: rgb(43, 43, 51);
+    border-radius: 5px;
+    padding: 6px 8px 8px 8px;
+    margin: 6px 8px 0 8px;
+}
+
+.usa-tab {
+    flex-grow: 1;
+    height: 26px;
+}
+
+.usa-btn:hover {
+    background-color: rgb(56, 56, 66);
+}
+
+.usa-section-title {
+    -unity-font-style: bold;
+    color: rgb(217, 217, 224);
+}

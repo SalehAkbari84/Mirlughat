@@ -1,2 +1,7 @@
 ﻿<Solution>
+  <Project Path="UIToolkit.Animation.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="UIToolkit.Animation.Tests.csproj" />
+  <Project Path="UIToolkit.Animation.Editor.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
 </Solution>
