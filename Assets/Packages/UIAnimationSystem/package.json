@@ -1,0 +1,26 @@
+{
+  "name": "com.uitoolkit.animation",
+  "version": "1.0.0",
+  "displayName": "UI Toolkit Animation System",
+  "description": "Animation, timeline and particle system for Unity UI Toolkit (VisualElement). A single-window visual editor plus a full code API. No external dependencies.",
+  "unity": "6000.0",
+  "keywords": [
+    "ui toolkit",
+    "uielements",
+    "animation",
+    "tween",
+    "particles",
+    "timeline",
+    "editor"
+  ],
+  "author": {
+    "name": "Saleh Akbari"
+  },
+  "samples": [
+    {
+      "displayName": "Scene Animator Demo",
+      "description": "A sample UXML menu plus a script showing the code API.",
+      "path": "Examples"
+    }
+  ]
+}

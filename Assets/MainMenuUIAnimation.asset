@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b64797da2c18c854f82876b784fd8e04, type: 3}
+  m_Name: MainMenuUIAnimation
+  m_EditorClassIdentifier: UIToolkit.Animation::UIToolkit.Animation.Timeline.UISceneAnimation
+  uxml: {fileID: 9197481963319205126, guid: 9323713d85b644741ae8f441a48e5cdc, type: 3}
+  additionalStyleSheets: []
+  previewSize: {x: 1080, y: 1920}
+  previewBackground: {r: 0.1, g: 0.1, b: 0.12, a: 1}
+  particles: []
+  triggers: []
+  sequence: []
+  playSequenceOnStart: 1
+  debugLog: 0

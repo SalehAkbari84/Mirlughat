@@ -3,8 +3,8 @@ using UnityEngine.UIElements;
 using UIToolkit.Animation;
 using UIToolkit.Animation.Timeline;
 
-// Example usage. Attach to a GameObject that has a UIDocument.
-[RequireComponent(typeof(UIDocument))]
+// Example usage. Attach to the GameObject that hosts the UI Toolkit panel
+// (Panel Renderer on Unity 6.5+, or UIDocument on older versions).
 public class AnimationDemo : MonoBehaviour
 {
     [Tooltip("Optional clip to play via the timeline system.")]
@@ -17,13 +17,16 @@ public class AnimationDemo : MonoBehaviour
 
     void OnEnable()
     {
-        _root = GetComponent<UIDocument>().rootVisualElement;
-        _panel = _root.Q<VisualElement>("panel");
-        _button = _root.Q<Button>("playButton");
-        _title = _root.Q<Label>("title");
+        UIPanel.WhenReady(gameObject, root =>
+        {
+            _root = root;
+            _panel = _root.Q<VisualElement>("panel");
+            _button = _root.Q<Button>("playButton");
+            _title = _root.Q<Label>("title");
 
-        if (_button != null)
-            _button.clicked += PlayShowcase;
+            if (_button != null)
+                _button.clicked += PlayShowcase;
+        });
     }
 
     // Example 1: simple one-liners using the fluent API.

@@ -130,6 +130,18 @@ namespace UIToolkit.Animation
             _onKill?.Invoke();
         }
 
+        bool HasRunningChild()
+        {
+            for (int i = 0; i < _entries.Count; i++)
+            {
+                var e = _entries[i];
+                if (e.IsCallback || e.Tween == null || !e.Started) continue;
+                var s = e.Tween.State;
+                if (s != TweenState.Completed && s != TweenState.Killed) return true;
+            }
+            return false;
+        }
+
         public bool Update(float deltaTime)
         {
             if (State == TweenState.Killed || State == TweenState.Completed) return true;
@@ -172,6 +184,10 @@ namespace UIToolkit.Animation
 
             if (_elapsed >= _duration)
             {
+                // Do not finish while a child is still playing (e.g. an entry set
+                // to repeat forever). Keep ticking so infinite steps keep running.
+                if (HasRunningChild()) return false;
+
                 _loopsDone++;
                 _onStepComplete?.Invoke();
 

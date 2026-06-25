@@ -1,9 +1,30 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ui:UXML
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:ui="UnityEngine.UIElements"
-    xmlns:uie="UnityEditor.UIElements"
-    xsi:noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd"
->
-    
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/Styles/MainMenu.uss?fileID=7433441132597879392&amp;guid=4336151ab822d764abf688c839fcb4be&amp;type=3#MainMenu"/>
+    <ui:VisualElement name="MainMenuBackground">
+        <ui:VisualElement name="MainMenuHeader">
+            <ui:VisualElement name="CoinSection">
+                <ui:VisualElement name="CoinStatusBarBackground">
+                    <ui:VisualElement name="BackgroundColor" style="flex-grow: 1; position: absolute; width: 90%; height: 61%; background-color: rgb(194, 151, 101);"/>
+                    <ui:Image source="project://database/Assets/Elements/ElementsStatus.png?fileID=6208019049525845642&amp;guid=f16cfeaea53981e4e89d7c3d78c8ac40&amp;type=3#ElementsStatus_0" scale-mode="StretchToFill" uv="0,0,1,1" name="CoinStatusElement" style="flex-grow: 1;"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="DiamondSection">
+                <ui:VisualElement name="DiamondStatusBarBackground">
+                    <ui:VisualElement name="BackgroundColor" style="flex-grow: 1; position: absolute; width: 90%; height: 61%; background-color: rgb(194, 151, 101);"/>
+                    <ui:Image source="project://database/Assets/Elements/ElementsStatus.png?fileID=6208019049525845642&amp;guid=f16cfeaea53981e4e89d7c3d78c8ac40&amp;type=3#ElementsStatus_0" scale-mode="StretchToFill" uv="0,0,1,1" name="DiamondStatusElement" style="flex-grow: 1;"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Button text="" name="SettingSection" icon-image="">
+                <ui:Image source="project://database/Assets/Elements/setting_gear.png?fileID=-5536269389925627745&amp;guid=058835878ba7ed0419d88acedac9a1f6&amp;type=3#setting_gear_0" name="SettingIco" style="flex-shrink: 0; width: 60px;"/>
+            </ui:Button>
+        </ui:VisualElement>
+        <ui:VisualElement name="MainMenuTitle">
+            <ui:Image name="TitleImage" source="project://database/Assets/Elements/media.getMediaUrlssRedirect%20(1).png?fileID=2800000&amp;guid=2317ac78545420a42804f2da9450cf78&amp;type=3#media.getMediaUrlssRedirect (1)" scale-mode="StretchToFill"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="MainMenuButtons">
+            <ui:Button text="" name="StartButton" class="MainMenuButtons"/>
+            <ui:Button text="" name="StroeButton" class="MainMenuButtons"/>
+        </ui:VisualElement>
+        <ui:VisualElement style="flex-grow: 1;"/>
+    </ui:VisualElement>
 </ui:UXML>

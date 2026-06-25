@@ -1,357 +1,398 @@
-# سیستم انیمیشن و پارتیکل UI Toolkit
+# سیستم انیمیشن و پارتیکل UI Toolkit — راهنمای کامل
 
-یک ابزار کامل برای ساخت انیمیشن و افکت روی رابط‌های **UI Toolkit** یونیتی (`VisualElement` / UXML / USS).
-شامل موتور انیمیشن، ویرایشگر بصری تک‌پنجره‌ای، سیستم پارتیکل، و یک API کامل برای کار با کد.
+یک ابزار کامل برای ساخت انیمیشن و افکت روی رابط‌های **UI Toolkit** یونیتی (`VisualElement` / UXML / USS):
+موتور انیمیشن + ویرایشگر بصریِ تک‌پنجره‌ای + سیستم پارتیکل + یک API کامل برای کار با کد. بدون هیچ کتابخانه‌ی خارجی.
 
-> این راهنما «صفر تا صد» است. اگر تازه‌کاری، از بخش **۱ تا ۵** را به‌ترتیب بخوان. اگر برنامه‌نویسی، بخش **۶ به بعد** مرجع کامل کد است.
+> این تنها فایلِ مستندات است. همه‌چیز این‌جاست. اگر تازه‌کاری، بخش ۱ تا ۶ را به‌ترتیب بخوان؛ اگر برنامه‌نویسی، بخش ۷ مرجع کد است.
 
 ---
 
 ## فهرست
 
-1. [نصب](#۱-نصب)
+1. [نصب و نیازمندی](#۱-نصب-و-نیازمندی)
 2. [مفاهیم پایه](#۲-مفاهیم-پایه)
-3. [شروع سریع با کد (۲ دقیقه)](#۳-شروع-سریع-با-کد)
-4. [آموزش بصری کامل: پنجره‌ی Scene Animator](#۴-آموزش-بصری-کامل)
-5. [اجرا در بازی (runtime)](#۵-اجرا-در-بازی)
-6. [مرجع کامل API کد](#۶-مرجع-کامل-api-کد)
-7. [Easing‌ها](#۷-easingها)
-8. [خصوصیات قابل انیمیت (AnimatableProperty)](#۸-خصوصیات-قابل-انیمیت)
-9. [پریست‌های آماده](#۹-پریستهای-آماده)
-10. [سیستم اعتبارسنجی (Validation)](#۱۰-سیستم-اعتبارسنجی)
-11. [عیب‌یابی و سؤالات متداول](#۱۱-عیبیابی)
-12. [محدودیت‌ها](#۱۲-محدودیتها)
+3. [شروع سریع](#۳-شروع-سریع)
+4. [پنجره‌ی Scene Animator — خط‌به‌خط](#۴-پنجرهی-scene-animator)
+5. [Play Order (ترتیب پخش)](#۵-play-order)
+6. [Interaction Triggers (رویدادها)](#۶-interaction-triggers)
+7. [مرجع کامل API کد](#۷-مرجع-کامل-api-کد)
+8. [پارتیکل](#۸-پارتیکل)
+9. [Easing و لوپ](#۹-easing-و-لوپ)
+10. [خصوصیات قابل انیمیت](#۱۰-خصوصیات-قابل-انیمیت)
+11. [پریست‌های آماده](#۱۱-پریستهای-آماده)
+12. [اعتبارسنجی (Validation)](#۱۲-اعتبارسنجی)
+13. [عیب‌یابی و سؤالات متداول](#۱۳-عیبیابی)
+14. [محدودیت‌ها](#۱۴-محدودیتها)
+15. [تاریخچه‌ی نسخه](#۱۵-تاریخچهی-نسخه)
 
 ---
 
-## ۱. نصب
+## ۱. نصب و نیازمندی
 
 1. پوشه‌ی `UIAnimationSystem` را داخل `Assets` پروژه‌ات کپی کن.
-2. تمام. هیچ setup دیگری لازم نیست؛ `TweenManager` در زمان اجرا خودش را خودکار می‌سازد.
-3. نیازمندی: **Unity 6** (6000.x) با پکیج UI Toolkit (پیش‌فرض نصب است). برای اجرای تست‌ها پکیج **Test Framework** لازم است.
+2. تمام. `TweenManager` در زمان اجرا خودش را خودکار می‌سازد؛ هیچ setup دیگری لازم نیست.
+3. **Unity 6** (6000.x) با پکیج UI Toolkit (پیش‌فرض نصب است). برای اجرای تست‌ها پکیج **Test Framework** لازم است.
+4. دو اسمبلی: `UIToolkit.Animation` (runtime) و `UIToolkit.Animation.Editor` (editor).
+5. **سازگاریِ خودکارِ نسخه:** میزبانِ پنلِ زمان اجرا خودکار انتخاب می‌شود — روی **Unity 6.5+** از **Panel Renderer** (چون UIDocument منسوخ شده) و روی نسخه‌های قدیمی‌تر از **UIDocument**. این کار با لایه‌ی `UIPanel` و سوییچِ کامپایلِ `UNITY_6000_5_OR_NEWER` انجام می‌شود؛ تو کاری لازم نیست بکنی. (بخشِ طراحی/ادیتور اصلاً به این وابسته نیست.)
 
 ---
 
 ## ۲. مفاهیم پایه
 
-چهار مفهوم را که بفهمی، همه‌چیز ساده می‌شود:
+- **Tween**: تغییر نرمِ یک مقدار در طول زمان (مثلاً opacity از ۰ به ۱ در ۰.۳ ثانیه).
+- **Clip (`UIAnimationClip`)**: یک انیمیشنِ کامل و قابل‌ذخیره که **چند المان را هم‌زمان** انیمیت می‌کند. هر کلیپ = لیست `ElementTrack` (هر المان با نام)؛ هر ElementTrack = لیست `PropertyTrack` (هر خاصیت با کی‌فریم‌ها).
+- **اتصال با نام (bind by name)**: کلیپ‌ها به المان‌ها **با نام** وصل می‌شوند، نه ارجاع مستقیم. هر المانی که می‌خواهی انیمیت شود **باید در UXML نام داشته باشد**. هنگام پخش با `root.Q<VisualElement>("نام")` پیدا می‌شود.
+- **Scene (`UISceneAnimation`)**: asset مرکزی که یک UXML را به Play Order، Interaction Triggers و پارتیکل‌ها وصل می‌کند — بدون دست‌زدن به UXML.
+- **Play Order**: تنها لیستِ ترتیب‌دارِ پخشِ کلیپ‌ها (اجرای خودکار موقع شروع).
+- **Interaction Triggers**: پخشِ کلیپ هنگام رویداد (کلیک/هاور/نگه‌داشتن/…) — رویدادمحور، جدا از Play Order.
 
-- **Tween**: یک تغییر نرمِ یک مقدار در طول زمان (مثلاً opacity از ۰ به ۱ در ۰.۳ ثانیه).
-- **Clip (`UIAnimationClip`)**: یک انیمیشنِ کامل و قابل‌ذخیره که می‌تواند **چند المان را هم‌زمان** انیمیت کند. هر کلیپ از «تِرَک‌های المان» تشکیل شده و هر تِرَک، چند «تِرَک خاصیت» با کی‌فریم دارد.
-- **bind by name (اتصال با نام)**: کلیپ‌ها به المان‌ها **با نام** وصل می‌شوند، نه با ارجاع مستقیم. یعنی هر المانی که می‌خواهی انیمیت شود، باید در UXML **نام (name)** داشته باشد. هنگام پخش، سیستم با `root.Q<VisualElement>("نام")` المان را پیدا می‌کند.
-- **Scene (`UISceneAnimation`)**: یک asset که یک فایل UXML را به مجموعه‌ای از کلیپ‌ها و پارتیکل‌ها وصل می‌کند — بدون دست‌زدن به خود UXML.
-
-نکته‌ی کلیدی: **برای انیمیت‌شدن، المان باید در UXML نام داشته باشد.** (در UI Builder، فیلد Name را پر کن.)
+> نکته‌ی طلایی: **برای انیمیت‌شدن، المان باید در UXML نام داشته باشد.** (در UI Builder فیلد Name را پر کن.)
 
 ---
 
-## ۳. شروع سریع با کد
+## ۳. شروع سریع
 
+**با کد:**
 ```csharp
-using UIToolkit.Animation;            // افکت‌های آماده روی VisualElement
+using UIToolkit.Animation;
 
-myElement.FadeIn(0.3f);                                   // محو ورود
-myButton.ScaleTo(1.2f, 0.25f).SetEase(Ease.OutBack);     // بزرگ‌شدن فنری
-panel.SlideInFromLeft(300f, 0.5f);                       // ورود از چپ
-label.ColorTo(Color.red, 0.3f);                          // تغییر رنگ
-spinner.Spin(1f);                                        // چرخش بی‌نهایت
-icon.Pulse();                                            // نبض بی‌نهایت
+myElement.FadeIn(0.3f);
+myButton.ScaleTo(1.2f, 0.25f).SetEase(Ease.OutBack);
+panel.SlideInFromLeft(300f, 0.5f);
+spinner.Spin(1f);
+icon.Pulse();
 ```
 
-هر متد یک `Tween` برمی‌گرداند که قابل زنجیره‌کردن است (بخش ۶).
+**بصری (بدون کد):** بخش ۴ را دنبال کن.
 
 ---
 
-## ۴. آموزش بصری کامل
+## ۴. پنجره‌ی Scene Animator
 
-روش بدون کد. کل کار در **یک پنجره** انجام می‌شود.
+روش بدون کد. همه‌چیز در **یک پنجره**.
 
-### گام ۱ — ساخت asset‌ها
-از پنجره‌ی Project راست‌کلیک کن:
-- **Create > UI Toolkit > Scene Animation** → یک «صحنه» بساز (مثلاً `MainMenuScene`).
-- (در صورت نیاز) **Create > UI Toolkit > Animation Clip** و **Create > UI Toolkit > Particle System**. اما معمولاً لازم نیست؛ از داخل پنجره می‌سازی.
+### گام ۱ — ساخت asset صحنه
+Project → راست‌کلیک → **Create > UI Toolkit > Scene Animation** (مثلاً `MainMenuScene`).
 
 ### گام ۲ — باز کردن پنجره
-**Window > UI Toolkit > Scene Animator**. (یا روی asset صحنه دابل‌کلیک کن.)
+**Window > UI Toolkit > Scene Animator** (یا دابل‌کلیک روی asset صحنه/کلیپ).
+در toolbar فیلد **Scene** را بده، و در تب **Setup** فایل **UXML** را وصل کن. حالا preview زنده را می‌بینی.
 
-در نوار بالا (Toolbar) فیلد **Scene** را به asset صحنه‌ات وصل کن، و در تب **Setup** فایل **UXML** را بده. حالا preview زنده‌ی رابطت را می‌بینی.
-
-### گام ۳ — بخش‌های پنجره
-
+### نقشه‌ی پنجره
 ```
-┌─ Toolbar: Scene | Reload | New Scene | AutoFit | Zoom | Frame | Reset | Preview Scene | ▸ Setup & Play
-├───────────────┬───────────────────────────┬──────────────────────────┐
-│  HIERARCHY    │        PREVIEW            │   تب‌ها: Setup/Animate/   │
-│  (درختِ       │  (رندر واقعیِ UXML)        │   Effects/Manage         │
-│   المان‌ها)    │                           │                          │
-├───────────────┴───────────────────────────┴──────────────────────────┤
-│  TIMELINE  (داکِ تمام‌عرض پایین — کی‌فریم‌ها اینجا)                       │
-└────────────────────────────────────────────────────────────────────────┘
+Toolbar (wrap-شونده): Scene | Reload | New | AutoFit | Zoom | Frame | Reset | Preview Scene | > Setup & Play
+بالا:  Hierarchy | Preview | تب‌ها (Setup / Animate / Effects / Manage)
+پایین: TIMELINE  (داکِ تمام‌عرض)
 ```
 
-**Hierarchy (چپ):**
-- درختِ تاشو از همه‌ی المان‌های UXML. روی فلش بزن تا باز/بسته شود.
-- بالای آن یک کادر **جستجو** هست.
-- نشانِ آبی «A» = این المان در کلیپ فعال انیمیشن دارد. نشانِ نارنجی «P» = پارتیکل دارد.
-- نقطه‌ی آبی = نام‌دار، نقطه‌ی خاکستری = بی‌نام (قابل انیمیت نیست).
-- **کلیک** = انتخاب. **دابل‌کلیک** = focus/قاب‌گرفتن آن المان در preview.
+### Toolbar (نوار بالا) — دکمه‌به‌دکمه
+- **Scene**: انتخاب asset صحنه.
+- **Reload** (آیکون refresh): بازسازی preview از UXML.
+- **New** (آیکون +): ساخت صحنه‌ی جدید.
+- **Auto Fit**: خودکار کل layout را در پنل جا و وسط می‌چیند (پیش‌فرض روشن).
+- **Zoom**: اسلایدر بزرگ‌نمایی (با چرخ موس هم کنترل می‌شود).
+- **Frame**: قاب‌گرفتن المان انتخاب‌شده (کلید `F`).
+- **Reset View**: برگشت به نمای کامل.
+- **Preview Scene**: پخش زنده‌ی کل صحنه (Play Order + پارتیکل) داخل ادیتور، بدون Play Mode.
+- **> Setup & Play** (سبز): خودکار `UISceneDirector` را به host پنلِ صحنه وصل و Play Mode را روشن می‌کند. **host به‌صورت خودکار تشخیص داده می‌شود:** Panel Renderer روی Unity 6.5+ و UIDocument روی نسخه‌های قدیمی‌تر.
 
-**Preview (وسط) و ناوبری:**
+### Hierarchy (چپ)
+- درختِ تاشو از **همه‌ی** المان‌های UXML + کادر **جستجو**.
+- نقطه‌ی آبی = نام‌دار، خاکستری = بی‌نام (قابل انیمیت نیست).
+- نشانِ **A** = در کلیپ فعال انیمیشن دارد، نشانِ **P** = پارتیکل دارد.
+- **کلیک** = انتخاب، **دابل‌کلیک** = Frame روی preview.
+
+### Preview (وسط) و ناوبری
 - **چرخ موس** = زوم به‌سمت نشانگر.
-- **درگ با دکمه‌ی وسط موس** = جابه‌جایی (pan).
-- **Auto Fit** (روشن به‌صورت پیش‌فرض) = خودکار کل صفحه را جا می‌دهد و وسط می‌چیند.
-- **Frame** (یا کلید `F`) = قاب‌گرفتن المان انتخاب‌شده. **Reset View** = برگشت به نمای کامل.
-- کلیک روی هر المان در preview = انتخابش.
+- **درگ دکمه‌ی وسط موس** = جابه‌جایی (pan).
+- کلیک روی هر المان = انتخابش (کادر زرد دورش).
 
-### گام ۴ — ساخت اولین انیمیشن (قدم‌به‌قدم)
+### تب Setup
+- **UXML Layout**، **Preview Size**، **Preview Background**، و **Additional Style Sheets** (افزودن/حذف).
 
-1. در preview یا hierarchy یک المان **نام‌دار** را انتخاب کن.
-2. برو تب **Animate**. اگر کلیپ نداری، دکمه‌ی **New** را بزن (خودکار در `Assets/Resources/UIAnimations` ذخیره می‌شود).
-3. **ساده‌ترین راه — Preset**: بخش **Presets** را باز کن، یکی مثل `Pop In` را انتخاب و **Apply** بزن. تمام شد؛ یک کلیپِ آماده ساخته و به المان bind می‌شود.
-4. **راه دستی — Element Inspector + Timeline**:
-   - در کارت **ELEMENT INSPECTOR** دکمه‌ی **+ Property** را بزن و خاصیت موردنظر (مثلاً Opacity) را اضافه کن.
-   - در **تایم‌لاینِ پایین**، playhead (خط قرمز) را روی زمان دلخواه ببر، روی تِرَک دابل‌کلیک کن تا کی‌فریم بسازی (یا دکمه‌ی + کنار تِرَک).
-   - روی الماسِ کی‌فریم کلیک کن؛ در پنل پایینِ تایم‌لاین مقدار، زمان و **ease** آن را تنظیم کن (نمودار کوچک ease هم نمایش داده می‌شود).
-   - playhead را بکش تا انیمیشن را روی preview واقعی ببینی.
+### تب Animate — خط‌به‌خط
+1. **CLIP**: انتخاب کلیپ یا **New** (خودکار در `Assets/Resources/UIAnimations` ذخیره می‌شود).
+2. **Add to Play Order**: کلیپ فعال را به‌عنوان یک step به Play Order اضافه می‌کند (تنها جای زمان‌بندیِ پخش).
+3. **ELEMENT INSPECTOR** (وقتی المانِ نام‌دار انتخاب است): تِرَک‌های آن المان با **مقدار زنده** + دکمه‌ی **Key** (ثبت مقدار فعلی در playhead) + حذف tِرَک + **+ Property**.
+4. **Presets** (فولد): انتخاب از ۴۷ انیمیشن آماده + **Apply** (می‌سازد، ذخیره و به Play Order اضافه می‌کند).
+5. **Record & shortcuts** (فولد): تاگل **Record** — المان انتخاب‌شده را در preview بکش تا کلیدهای موقعیت خودکار ساخته شوند.
+6. **Clip options & events** (فولد): **Relative** (افزودن روی pose فعلی)، **Playback Speed**، و **Events** (رویدادهای زمان‌بندی‌شده). توجه: تکرار این‌جا نیست؛ در Manage تنظیم می‌شود.
 
-### گام ۵ — Record (ضبط حرکت)
-در تب Animate بخش **Record & shortcuts** را باز کن و **Record** را روشن کن. حالا المان انتخاب‌شده را در preview **بکش**؛ کلیدهای موقعیت (TranslateX/Y) خودکار در playhead ساخته می‌شوند.
+### تایم‌لاین (داکِ پایین) — خط‌به‌خط
+- transport: **|<** شروع، **Play/Pause**، **>|** پایان، فیلد زمان، snap، zoom، **+ Element**.
+- روی تِرَک **دابل‌کلیک** = ساخت کی‌فریم. الماسِ کی‌فریم را بکش تا جابه‌جا شود؛ راست‌کلیک = حذف.
+- **چند-انتخاب**: `Ctrl/Shift + کلیک`؛ **box-select**: درگ روی فضای خالی؛ **درگ گروهی**.
+- **copy/paste/duplicate**: `Ctrl+C / V / D`.
+- دکمه‌ی **E** کنار هر تِرَک = ease کل آن تِرَک.
+- اینسپکتورِ کی‌فریم: زمان، مقدار، ease/curve + **نمودار کوچک ease**.
+- در حالت **چند-انتخاب**، یک کنترلِ **Ease/Curve برای همه‌ی انتخاب‌شده‌ها** ظاهر می‌شود.
 
-### میان‌برهای کیبورد (وقتی پنجره فوکوس دارد)
-`Space` پخش/مکث · `K` ثبت مقدار فعلی · `Del` حذف کی‌فریم · `←/→` حرکت playhead · `Shift+←/→` جابه‌جایی کی‌فریم · `F` قاب‌گرفتن · `Ctrl+C/V/D` کپی/پیست/تکثیر کی‌فریم.
+### میان‌برهای کیبورد
+`Space` پخش · `K` snapshot · `Del` حذف · `←/→` scrub · `Shift+←/→` جابه‌جایی کی‌فریم · `F` frame · `Ctrl+C/V/D` کپی/پیست/تکثیر.
 
-### ویرایش پیشرفته‌ی کی‌فریم (در تایم‌لاین)
-- **چند-انتخاب**: `Ctrl/Shift + کلیک`.
-- **انتخاب کادری (box-select)**: روی فضای خالیِ تِرَک درگ کن.
-- **درگ گروهی**: یک کی‌فریمِ انتخاب‌شده را بکش، بقیه هم با همان دلتا جابه‌جا می‌شوند.
-- **ease کل تِرَک**: دکمه‌ی `E` کنار تِرَک.
+### تب Effects (طراح پارتیکل)
+بخش ۸ را ببین.
 
-### گام ۶ — پارتیکل (تب Effects)
-1. المان میزبان (host) را انتخاب کن.
-2. تب **Effects**: یک preset پارتیکل (Confetti/Sparkle/Smoke/Trail/…) انتخاب و **Apply** بزن؛ یا یک `ParticleSystemConfig` آماده را bind کن.
-
-### گام ۷ — مدیریت (تب Manage)
-سه بخش جمع‌شونده:
-- **Library**: همه‌ی کلیپ‌ها و پارتیکل‌های پروژه؛ جستجو، Edit، **Copy Call** (کپیِ کد صدا زدن)، Ping، تغییر نام درجا، حذف (به سطل بازیافت).
-- **Scene Bindings**: مدیریت همه‌ی bindingهای صحنه (id/trigger/root/host) با هشدارِ نام‌های نامعتبر.
-- **Validation**: بررسی کامل مشکلات + دکمه‌ی **Auto-fix**.
-
-### گام ۸ — اجرا
-- **پیش‌نمایش کل صحنه داخل ادیتور**: دکمه‌ی **Preview Scene** (بدون Play Mode).
-- **اجرای واقعی با یک کلیک**: دکمه‌ی سبزِ **`> Setup & Play`** — خودکار یک `UISceneDirector` به GameObjectِ UIDocument در صحنه وصل می‌کند و Play Mode را روشن می‌کند.
-  - پیش‌نیاز: باید یک GameObject با **UIDocument** (و یک **PanelSettings**) در صحنه داشته باشی که همین UXML را نمایش دهد.
+### تب Manage
+چهار فولد: **Library** · **Play Order** (بخش ۵) · **Interaction Triggers** (بخش ۶) · **Validation** (بخش ۱۲).
+- **Library**: همه‌ی کلیپ‌ها و پارتیکل‌های پروژه؛ جستجو، **Edit**، **Copy Call** (کپیِ کدِ صدا زدن)، **Ping**، تغییر نام درجا، حذف (به سطل بازیافت).
 
 ---
 
-## ۵. اجرا در بازی
+## ۵. Play Order
 
-سه روش:
+**تنها لیستِ ترتیب‌دارِ پخشِ کلیپ‌ها.** هر مرحله (step):
+- **Clip**، **Repeat** (`1`=یک‌بار، `0`=بی‌نهایت، `N`=N بار)، **Repeat Type** (Restart/Yoyo/Incremental)، **Delay before**، **Play together with previous (parallel)** (روشن = هم‌زمان با مرحله‌ی قبلی اجرا می‌شود؛ خاموش = بعد از آن)، **Root element** (اختیاری).
+- مراحلِ موازی با تورفتگی و خطِ کناریِ آبی زیر مرحله‌ی قبل **گروه‌بندیِ بصری** می‌شوند و با نشانِ `+` مشخص‌اند. می‌توانی چند مرحله را پشت‌سرهم «together» کنی تا همه با هم اجرا شوند.
+- **پارتیکل هم در همین ترتیب پشتیبانی می‌شود**: هر step می‌تواند یک **Particle** (config + Host + Burst) داشته باشد که در زمانِ شروعِ همان step شلیک می‌شود — کنار کلیپ یا به‌تنهایی. دکمه‌های **+ Clip Step** و **+ Particle Step**. (`Burst = 0` یعنی پیوسته، `N>0` یعنی یک‌باره.)
+- دکمه‌های جابه‌جایی (^ ▾) و حذف.
+- **`Play sequence on start`**: اگر روشن باشد، موقع شروعِ صحنه خودکار اجرا می‌شود (پیش‌فرض روشن).
 
-### الف) با دایرکتور (بدون کد)
-کامپوننت **UI Toolkit > UI Scene Director** را به GameObjectِ UIDocument اضافه کن، asset صحنه را بده. binding‌هایی که trigger‌شان `OnEnable`/`OnStart` است خودکار اجرا می‌شوند. (دکمه‌ی Setup & Play همین را خودکار انجام می‌دهد.)
-- اجرای دستی از کد: `GetComponent<UISceneDirector>().PlayClip("intro");`
+نکات:
+- یک مرحله با **Repeat = 0 (بی‌نهایت) پایانی است**؛ مراحلِ بعد از آن خودکار **غیرفعال/خاکستری** می‌شوند (چون هرگز پخش نمی‌شوند).
+- برای پخش on-demand (هر وقت خواستی از کد) از `UIAnimation.Play` استفاده کن (بخش ۷)، نه Play Order.
 
-### ب) صدا زدن با نام
-کلیپ‌هایی که در ادیتور می‌سازی، در `Resources/UIAnimations` ذخیره و در `Resources/UIAnimationLibrary.asset` ثبت می‌شوند، پس با **نام** قابل اجرا هستند:
+---
+
+## ۶. Interaction Triggers
+
+پخشِ یک کلیپ هنگام **رویداد روی یک المان**. جدا از Play Order (رویدادمحور). تنظیم در **Manage → Interaction Triggers**.
+
+هر trigger:
+- **Element**: کدام المان.
+- **On Event**: `Click`، `DoubleClick`، `Hold` (نگه‌داشتن/long-press)، `PointerDown`، `PointerUp`، `PointerEnter` (هاور)، `PointerLeave`.
+- **Play Clip**: کدام کلیپ.
+- **Platform**: `Both` / `DesktopOnly` / `MobileOnly` — برای جداسازیِ موبایل/دسکتاپ (هاور را Desktop بگذار).
+- **Repeat** + **Repeat Type**.
+- **Hold (s)**: فقط برای ایونت Hold.
+- **ضد-spam**:
+  - **Ignore while playing** (پیش‌فرض روشن): تا انیمیشن تمام نشده، رویدادِ دوباره **نادیده** گرفته می‌شود.
+  - اگر خاموش: رویدادِ دوباره انیمیشن را **restart** می‌کند (باز هم تک‌instance، بدون انباشت).
+  - **Cooldown (s)**: حداقل فاصله بین دو اجرا.
+
+موبایل: رویدادهای Pointer روی موس و لمس کار می‌کنند؛ در زمان اجرا با `Application.isMobilePlatform` فیلتر پلتفرم اعمال می‌شود. `Hold` همان long-press موبایل است.
+
+از کد:
 ```csharp
-using UIToolkit.Animation.Timeline;
-UIAnimation.Play("PopIn_loginButton", rootVisualElement);
-```
-
-### ج) با trigger (هاور/کلیک/…)
-انیمیشنِ از-قبل-ساخته را با شرط اجرا به المان بده:
-```csharp
-button.PlayOn(UITrigger.PointerEnter, "ButtonHover");
-button.PlayOnClick("ButtonPress");
-icon.PlayOn(UITrigger.Hold, "ChargeUp", holdSeconds: 0.6f);
+button.PlayOnClick("ButtonPress");                 // ضد-spam خودکار
+icon.PlayOn(UITrigger.Hold, "Charge", holdSeconds: 0.6f);
+card.PlayOnHover("CardPop");
 ```
 
 ---
 
-## ۶. مرجع کامل API کد
+## ۷. مرجع کامل API کد
 
-### ۶.۱ افکت‌های آماده (روی هر `VisualElement`)
-`using UIToolkit.Animation;`
-
+### ۷.۱ افکت‌های آماده (روی هر `VisualElement`) — `using UIToolkit.Animation;`
 | دسته | متدها |
 |------|-------|
-| Fade | `Fade(to,dur)` · `FadeIn(dur)` · `FadeOut(dur, hideAtEnd)` |
+| Fade | `Fade(to,dur)` · `FadeIn(dur)` · `FadeOut(dur)` |
 | Scale | `ScaleTo(uniform یا Vector3, dur)` · `PunchScale(strength,dur)` |
-| Move | `MoveTo(Vector2,dur)` · `MoveBy(delta,dur)` · `SlideInFromLeft/Right/Bottom` · `Shake(strength,dur,vibrato)` · `MovePath(points,dur)` |
+| Move | `MoveTo` · `MoveBy` · `SlideInFromLeft/Right/Bottom` · `Shake` · `MovePath(points,dur)` |
 | Rotate | `RotateTo(deg,dur)` · `Spin(dur)` |
-| Color | `ColorTo(c,dur)` · `BackgroundColorTo(c,dur)` |
-| Size | `WidthTo(v,dur)` · `HeightTo(v,dur)` |
+| Color | `ColorTo` · `BackgroundColorTo` |
+| Size | `WidthTo` · `HeightTo` |
 | لوپ | `Pulse(scale,dur)` · `Wiggle(angle,dur)` · `FloatLoop(distance,dur)` |
 | ابزار | `SetPivot(x,y)` · `KillTweens()` |
 | Stagger (روی `IList<VisualElement>`) | `StaggerFadeIn` · `StaggerScaleIn` · `StaggerSlideInFromBottom` |
 
-### ۶.۲ زنجیره‌ی Tween (Fluent)
+### ۷.۲ زنجیره‌ی Tween
 ```csharp
 myElement.MoveTo(target, 0.5f)
-    .From(startPos)
-    .SetEase(Ease.InOutCubic)          // یا .SetEase(myAnimationCurve)
-    .SetDelay(0.2f)
-    .SetLoops(3, LoopType.Yoyo)        // -1 = بی‌نهایت
-    .SetId("intro")
-    .SetIgnoreTimeScale()
+    .From(startPos).SetEase(Ease.InOutCubic).SetDelay(0.2f)
+    .SetLoops(3, LoopType.Yoyo)          // -1 = بی‌نهایت
+    .SetId("intro").SetIgnoreTimeScale()
     .OnStart(()=>{}).OnUpdate(t=>{}).OnStepComplete(()=>{}).OnComplete(()=>{});
 ```
-کنترل: `t.Pause()` · `t.Play()` · `t.Restart()` · `t.Kill()` · `t.Kill(complete:true)`.
+کنترل: `Pause()` · `Play()` · `Restart()` · `Kill()` · `Kill(complete:true)`.
 
-### ۶.۳ Sequence (انیمیشن چندمرحله‌ای)
+### ۷.۳ Sequence
 ```csharp
 Tweening.Sequence()
     .Append(panel.FadeIn(0.4f))
-    .Join(panel.ScaleTo(1f,0.4f).From(Vector3.zero))   // هم‌زمان با قبلی
-    .AppendInterval(0.1f)                              // مکث
+    .Join(panel.ScaleTo(1f,0.4f).From(Vector3.zero))
+    .AppendInterval(0.1f)
     .Append(title.SlideInFromLeft(200f,0.35f))
-    .Insert(0.5f, icon.Spin(1f))                       // در زمان دقیق
+    .Insert(0.5f, icon.Spin(1f))
     .AppendCallback(()=>Debug.Log("mid"))
     .OnComplete(()=>Debug.Log("done"));
 ```
 سراسری: `Tweening.Kill(id)` · `Tweening.KillAll()`.
 
-### ۶.۴ ساخت کلیپ با کد (`UIClip`)
+### ۷.۴ ساخت کلیپ با کد (`UIClip`)
 ```csharp
 using UIToolkit.Animation.Timeline;
 UIClip.New("intro")
     .Element("panel").Opacity(0,0).Opacity(0.3f,1).Move(0,new Vector2(0,40)).Move(0.3f,Vector2.zero)
     .Element("title").ScaleXY(0,0.6f).ScaleXY(0.35f,1, Ease.OutBack)
-    .Event(0.3f,"intro_done")
-    .Loop(LoopType.Restart).Relative(false)
-    .Play(root);     // یا .Build() برای گرفتنِ خودِ UIAnimationClip
+    .Event(0.3f,"done").Speed(1f).Relative(false)
+    .Play(root);     // یا .Build()
 ```
-متدهای میان‌بر: `Opacity/MoveX/MoveY/Move/ScaleX/ScaleY/ScaleXY/Rotation/TextColor/BgColor/Width/Height` و `Key(property,time,value,ease)` برای هر خاصیت دلخواه.
+متدها: `Opacity/MoveX/MoveY/Move/ScaleX/ScaleY/ScaleXY/Rotation/TextColor/BgColor/Width/Height` و `Key(property,time,value,ease)`.
 
-### ۶.۵ صدا زدن با نام (`UIAnimation`)
+### ۷.۵ صدا زدن با نام (`UIAnimation`)
 ```csharp
-UIAnimation.Play("name", root);            // اجرا
-UIAnimation.Register("intro", clip);       // ثبت دستی با نام دلخواه
-UIAnimation.Get("name");  UIAnimation.Has("name");  UIAnimation.Unregister("name");
+UIAnimation.Play("WinPanel", root);     // پخش هر وقت خواستی (on-demand)
+UIAnimation.Register("intro", clip);    // ثبت دستی
+UIAnimation.Get("name"); UIAnimation.Has("name"); UIAnimation.Unregister("name");
 ```
+کلیپ‌ها زیر `Resources/UIAnimations` و در `UIAnimationLibrary.asset` ثبت می‌شوند → با نام قابل اجرا.
 
-### ۶.۶ تایم‌لاین صحنه با کد (`UITimeline`)
+### ۷.۶ تایم‌لاین صحنه با کد (`UITimeline`)
 ```csharp
 UITimeline.New()
     .Clip(0f, introClip, root)
     .Spawn(0.3f, host, confetti, burst:80)
     .Call(0.3f, ()=>PlaySfx())
     .Add(0.5f, title.FadeIn(0.3f))
-    .Loop()                                  // اختیاری
     .Play();
 ```
 
-### ۶.۷ تریگرها (`UITrigger`)
+### ۷.۷ تریگرها (`UITrigger`) — با ضد-spam
 ```csharp
-ve.PlayOn(UITrigger.PointerEnter, "Hover");   // یا کلیپ / Action
-ve.PlayOnHover("Hover");  ve.PlayOnClick("Click");
-ve.PlayOnDoubleClick("Open");  ve.PlayOnHold("Charge", 0.6f);
+ve.PlayOn(UITrigger.PointerEnter, "Hover");
+ve.PlayOnClick("Click");  ve.PlayOnDoubleClick("Open");  ve.PlayOnHold("Charge", 0.6f);
+// کنترل کامل:
+ve.PlayOnClip(UITrigger.Click, clip, loops:1, LoopType.Restart,
+              ignoreWhilePlaying:true, cooldown:0.2f, holdSeconds:0.5f);
 ```
-تریگرها: `PointerEnter, PointerLeave, Click, DoubleClick, PointerDown, PointerUp, Hold`.
+overloadِ `PlayOn(..., Action, ...)` هر کدِ دلخواه را اجرا می‌کند (بدون ضد-spam؛ خودت کنترل کن).
 
-### ۶.۸ async / coroutine
+### ۷.۸ async / coroutine
 ```csharp
-// async/await
-await panel.FadeIn();
-await title.ScaleTo(1f,0.3f);
-
-// coroutine
-yield return panel.FadeIn().WaitForCompletion();
+await panel.FadeIn();                                   // async/await
+yield return panel.FadeIn().WaitForCompletion();        // coroutine
 ```
 
-### ۶.۹ رویدادها و scrub کلیپ
+### ۷.۹ رویداد و scrub
 ```csharp
 var player = clip.Play(root);
-player.OnEvent += name => Debug.Log("event: " + name);   // رویدادهای زمان‌بندی‌شده
-player.Seek(0.5f, pause:true);                            // پرش به زمان دلخواه
+player.OnEvent += name => Debug.Log("event: " + name);
+player.Seek(0.5f, pause:true);
 ```
 
-### ۶.۱۰ پارتیکل با کد
-`using UIToolkit.Animation.Particles;`
+### ۷.۱۰ پارتیکل با کد — `using UIToolkit.Animation.Particles;`
 ```csharp
-host.SpawnParticles(myConfig);                              // پخش پیوسته
-button.Burst(myConfig, 50);                                 // یک‌باره
-host.SpawnPreset(ParticlePresets.Kind.Sparkle);            // پریست آماده
+host.SpawnParticles(myConfig);
+button.Burst(myConfig, 50);
+host.SpawnPreset(ParticlePresets.Kind.Sparkle);
 button.BurstPreset(ParticlePresets.Kind.Confetti, 80);
 ```
-کامپوننت آماده: **UI Toolkit > UI Particle System** (config + نام host).
+
+### ۷.۱۱ اجرا با دایرکتور
+```csharp
+var dir = GetComponent<UISceneDirector>();
+dir.PlaySequence();              // پخش Play Order
+dir.PlayParticles("id");         // پخش یک پارتیکلِ bindشده
+```
 
 ---
 
-## ۷. Easing‌ها
+## ۸. پارتیکل
 
-۳۱ تابع: `Linear` و خانواده‌های `Sine, Quad, Cubic, Quart, Quint, Expo, Circ, Back, Elastic, Bounce` — هرکدام در سه نسخه‌ی `In`, `Out`, `InOut`.
-برای منحنی سفارشی: `tween.SetEase(myAnimationCurve)` یا در کی‌فریم گزینه‌ی «Use Custom Curve».
+موتورِ pooled و ماژولار. ذرات یا VisualElement واقعی‌اند یا برای تعداد بالا با **یک mesh (Painter2D)** رسم می‌شوند.
 
-انواع لوپ: `Restart` (از اول)، `Yoyo` (رفت‌وبرگشت)، `Incremental` (تجمعی — مناسب چرخش بی‌پایان).
+### طراح پارتیکل (تب Effects)
+- **New / انتخاب config / Create from preset**.
+- **پیش‌نمایش زنده** با Play/Restart/Stop (ذرات از مرکزِ بوم پخش می‌شوند).
+- ویرایش کاملِ خواص با Inspector تعبیه‌شده.
+- **Bind to host**: اتصال به المان انتخاب‌شده.
+
+### ParticleSystemConfig
+- **Emission**: `emissionRate`, `maxParticles`, `loop`, `duration`, `warmup`, `bursts`.
+- **Visual**: `visualKind` (Circle/Square/Image/CustomClass), `sprite`, `customUssClass`, `additiveHint`.
+- **Mesh/Trail**: `meshRenderer` (هزاران ذره)، `trail` + `trailLength` + `trailWidthScale`.
+- **Modules** (افزودن/حذف/ترتیب): Shape, Velocity, Lifetime, Size, Color, Gravity, Rotation, **Attractor**, **Noise/Turbulence**.
+
+### ماژول جدید
+```csharp
+[System.Serializable]
+public class MyModule : ParticleModule
+{
+    public override void OnUpdate(Particle p, in ParticleContext ctx) { /* ... */ }
+    public override string DisplayName => "My Module";
+}
+```
+خودکار در منوی Add Module ظاهر می‌شود.
 
 ---
 
-## ۸. خصوصیات قابل انیمیت
+## ۹. Easing و لوپ
 
-| نوع float | نوع رنگ |
-|-----------|---------|
-| Opacity, TranslateX, TranslateY, ScaleX, ScaleY, Rotate | Color (متن/تینت) |
+۳۱ تابع: `Linear` و خانواده‌های `Sine, Quad, Cubic, Quart, Quint, Expo, Circ, Back, Elastic, Bounce` — هرکدام `In/Out/InOut`. منحنی سفارشی: `SetEase(AnimationCurve)` یا «Use Custom Curve» در کی‌فریم.
+
+لوپ: `Restart` (از اول)، `Yoyo` (رفت‌وبرگشت)، `Incremental` (تجمعی). تمام مسیرهای پخش از **carry-overshoot** استفاده می‌کنند → لوپِ صاف بدون تیک/drift.
+
+---
+
+## ۱۰. خصوصیات قابل انیمیت
+
+| float | رنگ |
+|-------|-----|
+| Opacity, TranslateX/Y, ScaleX/Y, Rotate | Color |
 | Width, Height, Left, Top, Right, Bottom | BackgroundColor |
 | MarginLeft/Top/Right/Bottom | BorderColor |
-| PaddingLeft/Top/Right/Bottom | TintColor (تینت تصویر پس‌زمینه) |
+| PaddingLeft/Top/Right/Bottom | TintColor |
 | BorderRadius, BorderWidth, FontSize | |
-| Display (مخفی/نمایش)، Visible | |
+| Display (مخفی/نمایش), Visible | |
 
-`Display` و `Visible` به‌صورت سوییچ کار می‌کنند: مقدار ≥ ۰.۵ یعنی روشن.
-
-برای افزودن خاصیت جدید: یک مقدار به enum `AnimatableProperty` اضافه کن + یک case در `PropertyBinder` (هم Apply هم Read). خودکار در ادیتور ظاهر می‌شود.
+`Display`/`Visible` سوییچی‌اند (مقدار ≥ ۰.۵ = روشن). افزودن خاصیت جدید: یک مقدار به `AnimatableProperty` + یک case در `PropertyBinder` (Apply و Read).
 
 ---
 
-## ۹. پریست‌های آماده
+## ۱۱. پریست‌های آماده
 
-**انیمیشن (`AnimationPresets.Kind`)**: FadeIn, FadeOut, PopIn, PopOut, SlideInLeft/Right/Top/Bottom, Pulse, Shake, Spin, Wiggle, FloatUpDown.
+**انیمیشن (`AnimationPresets.Kind`) — ۴۷ مورد:**
+- ورود: FadeIn, FadeInUp/Down/Left/Right, PopIn, ZoomIn, BounceIn, BackIn, RotateIn, RollIn, FlipInX/Y, SlideInLeft/Right/Top/Bottom.
+- خروج: FadeOut(+۴ جهت), PopOut, ZoomOut, BounceOut, BackOut, RotateOut, FlipOutX/Y, SlideOutLeft/Right/Top/Bottom.
+- جلب‌توجه: Pulse, HeartBeat, Flash, Glow, Shake, Wiggle, Swing, HeadShake, Tada, RubberBand, Jello, Bounce, Spin, FloatUpDown.
 
-**پارتیکل (`ParticlePresets.Kind`)**: Confetti, Sparkle, Smoke, Burst, Fireworks, Trail.
+**پارتیکل (`ParticlePresets.Kind`):** Confetti, Sparkle, Smoke, Burst, Fireworks, Trail.
 
-از ادیتور با دکمه‌ی Apply، یا از کد:
 ```csharp
-var clip = AnimationPresets.Create(AnimationPresets.Kind.PopIn, "myElement");
+var clip = AnimationPresets.Create(AnimationPresets.Kind.PopIn, "myButton");
 var cfg  = ParticlePresets.Create(ParticlePresets.Kind.Confetti);
 ```
 
 ---
 
-## ۱۰. سیستم اعتبارسنجی
+## ۱۲. اعتبارسنجی
 
-قبل از اجرا، مشکلات داده/پیکربندی را بگیر تا به باگ رانتایم نخوری:
-- در پنجره: تب **Manage > Validation** → لیست خطاها/هشدارها + **Auto-fix**.
-- از منو: **Window > UI Toolkit > Validate Selected Scene Animation** (گزارش در Console).
-- از کد: `UIAnimationValidator.ValidateScene(scene, root)` / `ValidateClip(clip)` / `ValidateParticles(cfg)`.
-
-نمونه بررسی‌ها: نام المانِ ناموجود در UXML، تِرَک بدون کی‌فریم، کلیدهای نامرتب، `maxParticles<=0`، نام کلیپ‌های تکراری (که `UIAnimation.Play` را مبهم می‌کند) و…
+قبل از اجرا مشکلات را بگیر: تب **Manage → Validation** (با **Auto-fix**)، یا منوی **Window > UI Toolkit > Validate Selected Scene Animation**، یا از کد `UIAnimationValidator.ValidateScene/ValidateClip/ValidateParticles`.
+نمونه: المانِ ناموجود در UXML، تِرَک بدون کی‌فریم، کلیدهای نامرتب، `maxParticles<=0`، نام کلیپ‌های تکراری، trigger بدون کلیپ.
 
 ---
 
-## ۱۱. عیب‌یابی
+## ۱۳. عیب‌یابی
 
-- **انیمیشن اجرا نمی‌شود / المان پیدا نمی‌شود**: المان باید در UXML **نام** داشته باشد و نامِ تِرَک کلیپ با آن یکی باشد. تب Validation را چک کن.
-- **`Setup & Play` کاری نمی‌کند**: باید یک UIDocument با PanelSettings در صحنه باشد که همان UXML را نمایش دهد.
-- **مقادیر در فریم اول صفر می‌شوند**: `resolvedStyle` تا بعد از اولین layout آماده نیست. اگر در `OnEnable` انیمیت می‌کنی یا `From()` صریح بده یا یک فریم صبر کن (`root.schedule.Execute(...)`). دایرکتورها این کار را خودکار انجام می‌دهند.
-- **`UIAnimation.Play` پیدا نمی‌کند**: کلیپ باید زیر `Resources/UIAnimations` یا در library باشد، یا با `UIAnimation.Register` ثبت شده باشد. نامِ تکراری نداشته باش.
-- **پارتیکل دیده نمی‌شود**: host باید اندازه داشته باشد؛ `overflow` خودکار Hidden می‌شود. برای هزاران ذره `meshRenderer` را روشن کن.
-
----
-
-## ۱۲. محدودیت‌ها
-
-- فقط **UI Toolkit** (نه uGUI/Canvas و نه انیمیشن GameObject سه‌بعدی).
-- خصوصیات قابل انیمیت همان لیست بخش ۸ هستند (افزودنی).
-- spline سه‌بعدی، sub-emitter پارتیکل، و curve-editor کامل per-track فعلاً نیست.
+- **اجرا نمی‌شود / المان پیدا نمی‌شود**: المان باید در UXML نام داشته باشد و نامِ track کلیپ با آن یکی باشد. Validation را چک کن.
+- **`Setup & Play` کاری نمی‌کند**: باید یک host پنل با PanelSettings در صحنه باشد که UXML را نمایش دهد — **Panel Renderer** در Unity 6.5+ یا **UIDocument** در نسخه‌های قدیمی‌تر. سیستم خودکار هرکدام موجود باشد را پیدا می‌کند.
+- **مقادیر در فریم اول صفر**: `resolvedStyle` تا بعد از اولین layout آماده نیست؛ یا `From()` بده یا یک فریم صبر کن. دایرکتورها خودکار صبر می‌کنند.
+- **`UIAnimation.Play` پیدا نمی‌کند**: کلیپ باید زیر `Resources/UIAnimations`/library باشد یا با `Register` ثبت شود؛ نام تکراری نداشته باش.
+- **پارتیکل دیده نمی‌شود**: host باید اندازه داشته باشد؛ برای تعداد زیاد `meshRenderer` را روشن کن.
+- **کلیک‌های پشت‌سرهم انیمیشن را spam می‌کنند**: در trigger گزینه‌ی **Ignore while playing** را روشن نگه‌دار یا **Cooldown** بگذار.
 
 ---
 
-## فایل‌های مرتبط
+## ۱۴. محدودیت‌ها
 
-- `PRO_FEATURES.md` — مرجع قابلیت‌های حرفه‌ای و کل API کد.
-- `TIMELINE_GUIDE.md` — جزئیات تایم‌لاین و دایرکتور.
-- `PARTICLES_GUIDE.md` — جزئیات پارتیکل.
-- `SCENE_ANIMATOR_GUIDE.md` — جزئیات پنجره‌ی واحد.
-</content>
-# UIAnimatioSystem
+- فقط **UI Toolkit** (نه uGUI/Canvas، نه انیمیشن GameObject سه‌بعدی).
+- خصوصیات قابل انیمیت همان لیست بخش ۱۰ (افزودنی).
+- spline سه‌بعدی، sub-emitter پارتیکل، و curve-editor کاملِ per-track فعلاً نیست.
+
+---
+
+## ۱۵. تاریخچه‌ی نسخه
+
+### 1.0.0
+- موتور tween/sequence با ۳۱ easing، لوپ Restart/Yoyo/Incremental، async/await و coroutine.
+- کلیپ‌های چند-المانی، حالت Relative، رویدادهای زمان‌بندی‌شده، `Seek`، `UIClip` builder، `UITimeline`.
+- صدا زدن با نام (`UIAnimation.Play`) از طریق library/Resources.
+- ۴۷ پریست انیمیشن، ۶ پریست پارتیکل.
+- موتور پارتیکلِ pooled + رندر mesh + trail + ماژول‌های Attractor/Noise.
+- پنجره‌ی واحد (Setup/Animate/Effects/Manage)، preview با زوم/پن/auto-fit، hierarchy تاشو با badge، اینسپکتورِ المان، تایم‌لاینِ داک با multi/box-select و copy/paste و ease graph، Record و میان‌برها، طراح پارتیکل، Play Order، Interaction Triggers با ضد-spam و تفکیک موبایل، Validation با auto-fix، Setup & Play و Preview Scene، UI آیکونی و toolbar ریسپانسیو.
+- تست‌های edit-mode برای موتور و validator.
+
+---
+
+لایسنس: MIT — فایل `LICENSE`.

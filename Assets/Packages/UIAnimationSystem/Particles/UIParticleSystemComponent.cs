@@ -1,12 +1,13 @@
 using UnityEngine;
 using UnityEngine.UIElements;
+using UIToolkit.Animation.Timeline;
 
 namespace UIToolkit.Animation.Particles
 {
-    // Drop-in MonoBehaviour to run a particle system inside a UIDocument element.
-    // Add to the GameObject that has the UIDocument. Multiple systems are fine.
+    // Drop-in MonoBehaviour to run a particle system inside a UI Toolkit panel.
+    // Add to the GameObject that hosts the panel (Panel Renderer on 6.5+, or
+    // UIDocument on older versions - resolved via UIPanel). Multiple are fine.
     [AddComponentMenu("UI Toolkit/UI Particle System")]
-    [RequireComponent(typeof(UIDocument))]
     public class UIParticleSystemComponent : MonoBehaviour
     {
         [Tooltip("Particle preset asset.")]
@@ -18,19 +19,12 @@ namespace UIToolkit.Animation.Particles
         [Tooltip("Use unscaled time (ignore Time.timeScale).")]
         public bool ignoreTimeScale = false;
 
-        UIDocument _doc;
         ParticleEmitter _emitter;
-
-        void Awake() => _doc = GetComponent<UIDocument>();
 
         void OnEnable()
         {
             if (config == null) { Debug.LogWarning("[UIParticleSystem] No config assigned."); return; }
-            if (_doc == null) _doc = GetComponent<UIDocument>();
-            var root = _doc != null ? _doc.rootVisualElement : null;
-            if (root == null) return;
-
-            root.schedule.Execute(() =>
+            UIPanel.WhenReady(gameObject, root =>
             {
                 VisualElement host = string.IsNullOrEmpty(hostElementName)
                     ? root

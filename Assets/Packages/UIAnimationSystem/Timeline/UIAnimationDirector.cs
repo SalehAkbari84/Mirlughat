@@ -23,29 +23,25 @@ namespace UIToolkit.Animation.Timeline
         [NonSerialized] public ClipPlayer runtimePlayer;
     }
 
-    // Central animation controller. Put ONE of these on the GameObject that has
-    // the UIDocument. Add as many AnimationEntry items as you like; you no longer
-    // need a separate component per element.
+    // Central animation controller. Put ONE of these on the GameObject that hosts
+    // the UI Toolkit panel (Panel Renderer on 6.5+, or UIDocument on older - via
+    // UIPanel). Add as many AnimationEntry items as you like.
     [AddComponentMenu("UI Toolkit/UI Animation Director")]
-    [RequireComponent(typeof(UIDocument))]
     public class UIAnimationDirector : MonoBehaviour
     {
         public List<AnimationEntry> animations = new List<AnimationEntry>();
 
-        UIDocument _doc;
-
-        void Awake() => _doc = GetComponent<UIDocument>();
+        VisualElement _root;   // cached panel root once ready
 
         void OnEnable()
         {
-            foreach (var a in animations)
-                if (a.trigger == PlayTrigger.OnEnable) PlayInternal(a);
-        }
-
-        void Start()
-        {
-            foreach (var a in animations)
-                if (a.trigger == PlayTrigger.OnStart) PlayInternal(a);
+            UIPanel.WhenReady(gameObject, root =>
+            {
+                _root = root;
+                foreach (var a in animations)
+                    if (a.trigger == PlayTrigger.OnEnable || a.trigger == PlayTrigger.OnStart)
+                        PlayInternal(a);
+            });
         }
 
         // Play by id (call from code, UnityEvents, or UI buttons).
@@ -70,20 +66,14 @@ namespace UIToolkit.Animation.Timeline
         ClipPlayer PlayInternal(AnimationEntry entry)
         {
             if (entry.clip == null) { Debug.LogWarning($"[Director] Entry '{entry.id}' has no clip."); return null; }
-            if (_doc == null) _doc = GetComponent<UIDocument>();
-            var docRoot = _doc != null ? _doc.rootVisualElement : null;
-            if (docRoot == null) return null;
+            if (_root == null) return null;
 
             VisualElement resolveRoot = string.IsNullOrEmpty(entry.rootElementName)
-                ? docRoot
-                : docRoot.Q<VisualElement>(entry.rootElementName) ?? docRoot;
+                ? _root
+                : _root.Q<VisualElement>(entry.rootElementName) ?? _root;
 
             entry.runtimePlayer?.Kill();
-            // Defer one frame so layout is resolved before sampling.
-            resolveRoot.schedule.Execute(() =>
-            {
-                entry.runtimePlayer = entry.clip.Play(resolveRoot);
-            });
+            entry.runtimePlayer = entry.clip.Play(resolveRoot);
             return entry.runtimePlayer;
         }
     }

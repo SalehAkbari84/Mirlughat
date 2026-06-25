@@ -57,32 +57,38 @@ namespace UIToolkit.Animation.Timeline
             if (!canCheckNames)
                 issues.Add(new ValidationIssue(ValidationSeverity.Info, "Element-name checks skipped (preview not loaded)."));
 
-            // clip bindings
-            var clipIds = new HashSet<string>();
-            foreach (var c in scene.clips)
+            // play order (sequence) steps
+            for (int i = 0; i < scene.sequence.Count; i++)
             {
-                string label = string.IsNullOrEmpty(c.id) ? "(unnamed clip binding)" : $"clip '{c.id}'";
-                if (string.IsNullOrEmpty(c.id))
-                    issues.Add(new ValidationIssue(ValidationSeverity.Warning, "A clip binding has an empty id.", scene));
-                else if (!clipIds.Add(c.id))
-                    issues.Add(new ValidationIssue(ValidationSeverity.Warning, $"Duplicate clip binding id '{c.id}'.", scene));
+                var step = scene.sequence[i];
+                string label = $"Play Order step #{i + 1}";
+                if (step == null) continue;
 
-                if (c.clip == null)
+                if (step.clip == null && step.particle == null)
                 {
-                    issues.Add(new ValidationIssue(ValidationSeverity.Warning, $"{label} has no clip assigned.", scene));
+                    issues.Add(new ValidationIssue(ValidationSeverity.Warning, $"{label} is empty (no clip and no particle).", scene));
                     continue;
                 }
 
-                if (canCheckNames && !string.IsNullOrEmpty(c.rootElementName) && !names.Contains(c.rootElementName))
-                    issues.Add(new ValidationIssue(ValidationSeverity.Warning, $"{label}: root element '{c.rootElementName}' not found in UXML.", c.clip));
+                if (step.clip != null)
+                {
+                    if (canCheckNames && !string.IsNullOrEmpty(step.rootElementName) && !names.Contains(step.rootElementName))
+                        issues.Add(new ValidationIssue(ValidationSeverity.Warning, $"{label}: root element '{step.rootElementName}' not found in UXML.", step.clip));
 
-                // element targets of the clip must exist under the (resolve) root
-                if (canCheckNames)
-                    foreach (var et in c.clip.elements)
-                        if (!string.IsNullOrEmpty(et.elementName) && !names.Contains(et.elementName))
-                            issues.Add(new ValidationIssue(ValidationSeverity.Warning, $"{label}: target element '{et.elementName}' not found in UXML.", c.clip));
+                    if (canCheckNames)
+                        foreach (var et in step.clip.elements)
+                            if (!string.IsNullOrEmpty(et.elementName) && !names.Contains(et.elementName))
+                                issues.Add(new ValidationIssue(ValidationSeverity.Warning, $"{label}: target element '{et.elementName}' not found in UXML.", step.clip));
 
-                CheckClip(c.clip, issues, null);
+                    CheckClip(step.clip, issues, null);
+                }
+
+                if (step.particle != null)
+                {
+                    if (canCheckNames && !string.IsNullOrEmpty(step.particleHost) && !names.Contains(step.particleHost))
+                        issues.Add(new ValidationIssue(ValidationSeverity.Warning, $"{label}: particle host '{step.particleHost}' not found in UXML.", step.particle));
+                    CheckParticles(step.particle, issues);
+                }
             }
 
             // particle bindings
@@ -105,6 +111,20 @@ namespace UIToolkit.Animation.Timeline
                     issues.Add(new ValidationIssue(ValidationSeverity.Warning, $"{label}: host '{p.hostElementName}' not found in UXML.", p.particleConfig));
 
                 CheckParticles(p.particleConfig, issues);
+            }
+
+            // interaction triggers
+            if (scene.triggers != null)
+            {
+                foreach (var tr in scene.triggers)
+                {
+                    if (tr == null) continue;
+                    string label = string.IsNullOrEmpty(tr.elementName) ? "(unnamed trigger)" : $"trigger on '{tr.elementName}'";
+                    if (tr.clip == null)
+                        issues.Add(new ValidationIssue(ValidationSeverity.Warning, $"{label} has no clip to play.", scene));
+                    if (canCheckNames && !string.IsNullOrEmpty(tr.elementName) && !names.Contains(tr.elementName))
+                        issues.Add(new ValidationIssue(ValidationSeverity.Warning, $"{label}: element not found in UXML.", scene));
+                }
             }
 
             return issues;

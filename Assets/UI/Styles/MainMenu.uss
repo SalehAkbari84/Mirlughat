@@ -1,1 +1,97 @@
-VisualElement {}
+#MainMenuBackground {
+    background-image: url("project://database/Assets/Elements/BackgroundMainMenu.png?fileID=2800000&guid=00da9d87650387a40861d510d9c1d2ed&type=3#BackgroundMainMenu");
+    flex-grow: 1;
+}
+
+#MainMenuHeader {
+    flex-shrink: 0;
+    flex-grow: 0;
+    flex-direction: row-reverse;
+    width: 100%;
+    height: 170px;
+    align-items: center;
+    justify-content: space-around;
+}
+
+#MainMenuTitle {
+    flex-grow: 0.3;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+}
+
+#TitleImage {
+    width: 100%;
+    flex-grow: 1;
+    height: 480px;
+}
+
+#MainMenuButtons {
+    flex-grow: 0.5;
+    align-items: center;
+    justify-content: space-evenly;
+    align-content: auto;
+}
+
+.MainMenuButtons {
+    width: 40%;
+    flex-grow: 0;
+    height: 185px;
+    border-top-width: 0;
+    border-right-width: 0;
+    border-bottom-width: 0;
+    border-left-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+#StartButton {
+    background-image: url("project://database/Assets/Elements/m123123edia.getMediaUrlRedirect.png?fileID=6167979015424201270&guid=4b79ffc9e82ee61479309baf58bec089&type=3#m123123edia.getMediaUrlRedirect_0");
+}
+
+#StroeButton {
+    background-image: url("project://database/Assets/Elements/Store_Btn.png?fileID=-2156485674412682064&guid=8e5dc342d77135a4f85c9c43a38cbf37&type=3#Store_Btn_0");
+}
+
+#CoinSection {
+    flex-grow: 0;
+    align-items: center;
+    justify-content: flex-start;
+    flex-shrink: 0;
+}
+
+#CoinStatusBarBackground {
+    flex-shrink: 0;
+    width: 300px;
+    height: 100px;
+    align-items: center;
+    justify-content: center;
+}
+
+#DiamondSection {
+    flex-grow: 0;
+    align-items: center;
+    justify-content: flex-start;
+    flex-shrink: 0;
+}
+
+#DiamondStatusBarBackground {
+    flex-shrink: 0;
+    width: 300px;
+    height: 100px;
+    align-items: center;
+    justify-content: center;
+}
+
+#SettingSection {
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+    background-image: url("project://database/Assets/Elements/%D8%B3%D8%AB%D9%81%D9%81%D9%87%D8%AF%D9%84_%D8%B0%D9%81%D8%AF.png?fileID=7531939619413517998&guid=c6f0842cf5a71034184447609d0221cb&type=3#سثففهدل_ذفد_0");
+    background-color: rgba(0, 0, 0, 0);
+    border-top-width: 0;
+    border-right-width: 0;
+    border-bottom-width: 0;
+    border-left-width: 0;
+}

@@ -93,19 +93,36 @@ namespace UIToolkit.Animation.Editor
         Button _previewSceneBtn;
         readonly List<ClipPlayer> _scenePlayers = new List<ClipPlayer>();
         readonly List<ParticleEmitter> _sceneEmitters = new List<ParticleEmitter>();
+        Sequence _previewSequence;
+
+        // particle designer (Effects tab)
+        ParticleSystemConfig _fxConfig;
+        VisualElement _fxPreviewHost;
+        ParticleEmitter _fxEmitter;
+        double _fxLast;
+        bool _fxRunning;
 
         [MenuItem("Window/UI Toolkit/Scene Animator")]
         public static void Open()
         {
             var w = GetWindow<UISceneAnimatorWindow>();
             w.titleContent = new GUIContent("UI Scene Animator");
-            w.minSize = new Vector2(1100, 620);
+            w.minSize = new Vector2(820, 520);
         }
 
         [UnityEditor.Callbacks.OnOpenAsset]
         public static bool OnOpen(int instanceID, int line)
         {
+#if UNITY_6000_5_OR_NEWER
+            // OnOpenAsset only gives an int; EntityIdToObject takes an EntityId, so
+            // the int->EntityId conversion is unavoidable here. Silence just that
+            // deprecation on this line.
+#pragma warning disable 618
+            var obj = EditorUtility.EntityIdToObject(instanceID);   // InstanceIDToObject renamed in 6.5
+#pragma warning restore 618
+#else
             var obj = EditorUtility.InstanceIDToObject(instanceID);
+#endif
             if (obj is UISceneAnimation scene)
             {
                 var w = GetWindow<UISceneAnimatorWindow>();
@@ -160,6 +177,8 @@ namespace UIToolkit.Animation.Editor
         // ===============================================================
         void CreateGUI()
         {
+            if (minSize.x > 821f || minSize.y > 521f) minSize = new Vector2(820, 520);
+
             var root = rootVisualElement;
             root.style.flexDirection = FlexDirection.Column;
             root.focusable = true;
@@ -190,7 +209,7 @@ namespace UIToolkit.Animation.Editor
             hsplit.Add(leftPane);
 
             // CENTER + RIGHT
-            var centerRight = new TwoPaneSplitView(1, 380, TwoPaneSplitViewOrientation.Horizontal);
+            var centerRight = new TwoPaneSplitView(1, 360, TwoPaneSplitViewOrientation.Horizontal);
             hsplit.Add(centerRight);
 
             // CENTER: preview
@@ -223,7 +242,8 @@ namespace UIToolkit.Animation.Editor
                           borderLeftColor = Color.yellow, borderRightColor = Color.yellow,
                           display = DisplayStyle.None }
             };
-            _previewClip.Add(_selectionOverlay);
+            // NOTE: the overlay is parented to _previewHost (the scaled canvas) in
+            // ReloadPreview so it zooms/pans together with the element it marks.
 
             _previewInfo = new Label { style = { position = Position.Absolute, bottom = 4, left = 6,
                           fontSize = 10, color = C_Sub } };
@@ -233,7 +253,7 @@ namespace UIToolkit.Animation.Editor
             centerRight.Add(centerPane);
 
             // RIGHT: tabs
-            _rightPanel = new VisualElement { style = { minWidth = 320, flexGrow = 0 } };
+            _rightPanel = new VisualElement { style = { minWidth = 260, flexGrow = 0 } };
             centerRight.Add(_rightPanel);
 
             // BOTTOM: full-width timeline dock.
@@ -252,14 +272,13 @@ namespace UIToolkit.Animation.Editor
                 style = { flexDirection = FlexDirection.Row, alignItems = Align.Center,
                           backgroundColor = C_Panel, paddingLeft = 8, paddingRight = 6, paddingTop = 2, paddingBottom = 2 }
             };
-            _timelineDockTitle = new Label("TIMELINE") { style = { unityFontStyleAndWeight = FontStyle.Bold, color = C_Text } };
+            _timelineDockTitle = new Label("TIMELINE") { style = { unityFontStyleAndWeight = FontStyle.Bold, color = C_Text, flexShrink = 0, marginRight = 8 } };
             header.Add(_timelineDockTitle);
-            header.Add(new VisualElement { style = { flexGrow = 1 } });
 
-            _dockClipField = new ObjectField { objectType = typeof(UIAnimationClip), value = _activeClip, style = { width = 220 } };
+            _dockClipField = new ObjectField { objectType = typeof(UIAnimationClip), value = _activeClip, style = { flexGrow = 1, flexShrink = 1, minWidth = 80, maxWidth = 260 } };
             _dockClipField.RegisterValueChangedCallback(e => SetActiveClip(e.newValue as UIAnimationClip));
             header.Add(_dockClipField);
-            header.Add(new Button(CreateClipFlow) { text = "New", style = { width = 44, marginLeft = 4 } });
+            header.Add(new Button(CreateClipFlow) { text = "New", style = { width = 44, marginLeft = 4, flexShrink = 0 } });
             _timelineDock.Add(header);
 
             EnsureTimeline();
@@ -284,15 +303,24 @@ namespace UIToolkit.Animation.Editor
 
         void BuildToolbar(VisualElement root)
         {
-            var bar = new Toolbar();
+            // A wrapping row so the controls reflow onto multiple lines on narrow
+            // windows instead of being clipped (responsive toolbar).
+            var bar = new VisualElement
+            {
+                style = { flexDirection = FlexDirection.Row, flexWrap = Wrap.Wrap, alignItems = Align.Center,
+                          backgroundColor = C_Panel, paddingLeft = 4, paddingRight = 4, paddingTop = 2, paddingBottom = 2,
+                          borderBottomWidth = 1, borderBottomColor = new Color(0, 0, 0, 0.3f) }
+            };
 
             var sceneField = new ObjectField { objectType = typeof(UISceneAnimation), value = _scene, style = { width = 200 } };
             sceneField.RegisterValueChangedCallback(e => SetScene(e.newValue as UISceneAnimation));
             bar.Add(sceneField);
 
             bar.Add(new ToolbarSpacer());
-            bar.Add(new ToolbarButton(ReloadPreview) { text = "Reload UXML" });
-            bar.Add(new ToolbarButton(CreateSceneFlow) { text = "New Scene" });
+            bar.Add(new ToolbarButton(ReloadPreview) { text = "Reload UXML" }
+                .SetIcon("Reload UXML", "Refresh", "d_Refresh"));
+            bar.Add(new ToolbarButton(CreateSceneFlow) { text = "New Scene" }
+                .SetIcon("New Scene Animation", "Toolbar Plus", "d_Toolbar Plus"));
 
             bar.Add(new ToolbarSpacer());
             _autoFitToggle = new ToolbarToggle { text = "Auto Fit", value = _autoFit };
@@ -315,11 +343,8 @@ namespace UIToolkit.Animation.Editor
             _previewSceneBtn.tooltip = "Play all bound clips and particles live inside this window (no Play Mode).";
             bar.Add(_previewSceneBtn);
 
-            // push the play button to the far right
-            bar.Add(new VisualElement { style = { flexGrow = 1 } });
-
             var playBtn = HoverButton(">  Setup & Play", SetupAndPlay, C_Green, C_GreenHi);
-            playBtn.tooltip = "Attach a UISceneDirector to the UIDocument in the open scene and enter Play Mode.";
+            playBtn.tooltip = "Attach a UISceneDirector to the UI host (Panel Renderer on 6.5+, else UIDocument) in the open scene and enter Play Mode.";
             playBtn.style.unityFontStyleAndWeight = FontStyle.Bold;
             playBtn.style.color = Color.white;
             playBtn.style.paddingLeft = 10; playBtn.style.paddingRight = 10;
@@ -414,6 +439,7 @@ namespace UIToolkit.Animation.Editor
                 if (ss != null) _clonedRoot.styleSheets.Add(ss);
 
             _previewHost.Add(_clonedRoot);
+            if (_selectionOverlay != null) _previewHost.Add(_selectionOverlay);   // overlay scales/pans with the canvas
             HookSelection(_clonedRoot);
 
             RebuildPreviewPlayer();
@@ -757,22 +783,31 @@ namespace UIToolkit.Animation.Editor
         void UpdateSelectionOverlay()
         {
             if (_selectionOverlay == null) return;
-            if (_selectedElement == null || _previewHost == null)
+            if (_selectedElement == null || _previewHost == null || _selectionOverlay.parent != _previewHost)
             {
                 _selectionOverlay.style.display = DisplayStyle.None;
                 return;
             }
 
-            var wb = _selectedElement.worldBound;
-            var clip = _previewHost.parent;
-            if (clip == null) { _selectionOverlay.style.display = DisplayStyle.None; return; }
-            var clipWorld = clip.worldBound;
+            // Position the overlay in the host's LOCAL space (the un-scaled canvas
+            // coordinates). Because the overlay lives inside the scaled host, it
+            // zooms/pans together with the element, so it never drifts.
+            Vector2 tl = _selectedElement.ChangeCoordinatesTo(_previewHost, Vector2.zero);
+            Vector2 br = _selectedElement.ChangeCoordinatesTo(_previewHost,
+                new Vector2(_selectedElement.layout.width, _selectedElement.layout.height));
 
             _selectionOverlay.style.display = DisplayStyle.Flex;
-            _selectionOverlay.style.left = wb.x - clipWorld.x;
-            _selectionOverlay.style.top = wb.y - clipWorld.y;
-            _selectionOverlay.style.width = wb.width;
-            _selectionOverlay.style.height = wb.height;
+            _selectionOverlay.style.left = tl.x;
+            _selectionOverlay.style.top = tl.y;
+            _selectionOverlay.style.width = Mathf.Max(0f, br.x - tl.x);
+            _selectionOverlay.style.height = Mathf.Max(0f, br.y - tl.y);
+
+            // keep the border ~2px on screen regardless of zoom
+            float bw = 2f / Mathf.Max(0.01f, _previewScale);
+            _selectionOverlay.style.borderTopWidth = bw;
+            _selectionOverlay.style.borderBottomWidth = bw;
+            _selectionOverlay.style.borderLeftWidth = bw;
+            _selectionOverlay.style.borderRightWidth = bw;
         }
 
         // ===============================================================
@@ -781,6 +816,7 @@ namespace UIToolkit.Animation.Editor
         void RebuildRightPanel()
         {
             if (_rightPanel == null) return;
+            FxStop();   // stop any running particle-designer preview before rebuilding
             _rightPanel.Clear();
 
             var tabs = new VisualElement { style = { flexDirection = FlexDirection.Row, marginTop = 4, marginLeft = 6, marginRight = 6 } };
@@ -905,6 +941,22 @@ namespace UIToolkit.Animation.Editor
             }) { text = "+ Add Style Sheet", style = { marginTop = 4 } });
             body.Add(ssCard);
 
+            // ---- Debug ----
+            var dbgCard = Card();
+            dbgCard.Add(new Label("DEBUG") { style = { unityFontStyleAndWeight = FontStyle.Bold, color = C_Text } });
+            var logToggle = new Toggle("Log (trace runtime in Console)") { value = _scene.debugLog };
+            logToggle.RegisterValueChangedCallback(e =>
+            {
+                Undo.RecordObject(_scene, "Debug Log");
+                _scene.debugLog = e.newValue;
+                UILog.Enabled = e.newValue;     // also affects editor previews immediately
+                EditorUtility.SetDirty(_scene);
+            });
+            dbgCard.Add(logToggle);
+            dbgCard.Add(new Label("When on, the director, panel host, Play Order and clip player print a step-by-step trace tagged [UIAnim] so you can see exactly where playback goes or stops.")
+                { style = { color = C_Sub, fontSize = 10, marginTop = 2, whiteSpace = WhiteSpace.Normal } });
+            body.Add(dbgCard);
+
             body.Add(new HelpBox("Tip: name your elements in UXML/UI Builder. Animations and particles bind by element name.", HelpBoxMessageType.Info));
         }
 
@@ -937,23 +989,24 @@ namespace UIToolkit.Animation.Editor
             if (_selectedElement != null && !hasNamedSelection)
                 card.Add(new HelpBox("This element has no name. Give it a name in UXML so it can be animated.", HelpBoxMessageType.Warning));
 
-            // bind to scene
+            // add to the play order (the single place clips are scheduled)
             if (_activeClip != null)
             {
-                bool bound = _scene.clips.Exists(c => c.clip == _activeClip);
-                var bindBtn = HoverButton(bound ? "Clip is bound (play OnEnable)" : "Bind clip to scene (play OnEnable)",
+                bool inOrder = _scene.sequence.Exists(s => s.clip == _activeClip);
+                var addBtn = HoverButton(inOrder ? "Already in Play Order" : "Add to Play Order",
                     () =>
                     {
-                        if (_scene.clips.Exists(c => c.clip == _activeClip)) return;
-                        Undo.RecordObject(_scene, "Bind Clip");
-                        _scene.clips.Add(new UISceneAnimation.SceneClipBinding
-                        { id = _activeClip.name, clip = _activeClip, trigger = PlayTrigger.OnEnable });
+                        if (_scene.sequence.Exists(s => s.clip == _activeClip)) return;
+                        Undo.RecordObject(_scene, "Add to Play Order");
+                        _scene.sequence.Add(new UISceneAnimation.SequenceStep
+                        { id = _activeClip.name, clip = _activeClip });
                         EditorUtility.SetDirty(_scene);
                         RebuildRightPanel();
-                    }, bound ? C_Green : C_AccentD, bound ? C_Green : C_Accent);
-                bindBtn.SetEnabled(!bound);
-                bindBtn.style.marginTop = 6; bindBtn.style.color = Color.white;
-                card.Add(bindBtn);
+                    }, inOrder ? C_Green : C_AccentD, inOrder ? C_Green : C_Accent);
+                addBtn.SetEnabled(!inOrder);
+                addBtn.tooltip = "Schedule this clip in Manage > Play Order. For on-demand playback from code use UIAnimation.Play(\"" + _activeClip.name + "\", root).";
+                addBtn.style.marginTop = 6; addBtn.style.color = Color.white;
+                card.Add(addBtn);
             }
             body.Add(card);
 
@@ -1008,32 +1061,8 @@ namespace UIToolkit.Animation.Editor
             });
             optCard.Add(relToggle);
 
-            var loopT = new Toggle("Loop") { value = _activeClip.loop };
-            loopT.RegisterValueChangedCallback(e =>
-            {
-                Undo.RecordObject(_activeClip, "Loop");
-                _activeClip.loop = e.newValue;
-                EditorUtility.SetDirty(_activeClip);
-            });
-            optCard.Add(loopT);
-
-            var loopTypeF = new EnumField("Loop Type", _activeClip.loopType);
-            loopTypeF.RegisterValueChangedCallback(e =>
-            {
-                Undo.RecordObject(_activeClip, "Loop Type");
-                _activeClip.loopType = (LoopType)e.newValue;
-                EditorUtility.SetDirty(_activeClip);
-            });
-            optCard.Add(loopTypeF);
-
-            var loopsF = new IntegerField("Loops (0 = infinite)") { value = _activeClip.loops };
-            loopsF.RegisterValueChangedCallback(e =>
-            {
-                Undo.RecordObject(_activeClip, "Loops");
-                _activeClip.loops = Mathf.Max(0, e.newValue);
-                EditorUtility.SetDirty(_activeClip);
-            });
-            optCard.Add(loopsF);
+            // Note: repeat/loop is set per animation in Manage (Scene Bindings &
+            // Play Order), so it is intentionally not here to avoid confusion.
 
             var speedF = new FloatField("Playback Speed") { value = _activeClip.playbackSpeed };
             speedF.RegisterValueChangedCallback(e =>
@@ -1104,7 +1133,8 @@ namespace UIToolkit.Animation.Editor
                         el.properties.Remove(capt);
                         EditorUtility.SetDirty(_activeClip);
                         RebuildPreviewPlayer(); _timeline?.Refresh(); RebuildRightPanel();
-                    }) { text = "x", style = { width = 22 } });
+                    }) { text = "x", style = { width = 24 } }
+                        .SetIcon("Remove track", "TreeEditor.Trash", "d_TreeEditor.Trash"));
                     insp.Add(row);
                 }
             }
@@ -1172,168 +1202,163 @@ namespace UIToolkit.Animation.Editor
             RebuildRightPanel();
         }
 
-        // ----- Particles tab -----
+        // ----- Effects tab: a full particle designer with live preview -----
         void BuildParticlesTab(VisualElement body)
         {
-            if (_scene == null) { body.Add(new HelpBox("Assign a scene asset first (Setup tab).", HelpBoxMessageType.Info)); return; }
+            // ---------------- DESIGNER ----------------
+            var dz = Card();
+            dz.Add(new Label("PARTICLE DESIGNER") { style = { unityFontStyleAndWeight = FontStyle.Bold, color = C_Text } });
 
-            body.Add(SelectedElementBanner());
+            var crow = new VisualElement { style = { flexDirection = FlexDirection.Row, alignItems = Align.Center } };
+            var cfgField = new ObjectField { objectType = typeof(ParticleSystemConfig), value = _fxConfig, style = { flexGrow = 1 } };
+            cfgField.RegisterValueChangedCallback(e => { _fxConfig = e.newValue as ParticleSystemConfig; RebuildRightPanel(); });
+            crow.Add(cfgField);
+            crow.Add(new Button(CreateParticleFlow) { text = "New", style = { width = 44 } });
+            dz.Add(crow);
 
-            bool hasNamedSelection = _selectedElement != null && !string.IsNullOrEmpty(_selectedElement.name);
-            string elementName = hasNamedSelection ? _selectedElement.name : null;
-
-            var card = Card();
-            card.Add(new Label("BIND PARTICLE PRESET") { style = { unityFontStyleAndWeight = FontStyle.Bold, color = C_Text } });
-
-            var cfgField = new ObjectField("Preset") { objectType = typeof(ParticleSystemConfig) };
-            card.Add(cfgField);
-
-            var bindBtn = new Button(() =>
+            if (_fxConfig == null)
             {
-                var cfg = cfgField.value as ParticleSystemConfig;
-                if (cfg == null || elementName == null) return;
-                Undo.RecordObject(_scene, "Bind Particles");
-                _scene.particles.Add(new UISceneAnimation.SceneParticleBinding
-                { id = cfg.name, particleConfig = cfg, hostElementName = elementName, playOnStart = true });
-                EditorUtility.SetDirty(_scene);
-                RebuildRightPanel();
-            }) { text = hasNamedSelection ? $"Bind to '{elementName}'" : "Select a named host element", style = { marginTop = 4 } };
-            bindBtn.SetEnabled(hasNamedSelection);
-            card.Add(bindBtn);
-
-            if (_selectedElement != null && !hasNamedSelection)
-                card.Add(new HelpBox("This element has no name. Give it a name in UXML so it can host particles.", HelpBoxMessageType.Warning));
-            body.Add(card);
-
-            // Particle preset library (one-click).
-            var presetCard = Card();
-            presetCard.Add(new Label("PARTICLE PRESETS") { style = { unityFontStyleAndWeight = FontStyle.Bold, color = C_Text } });
-            var pRow = new VisualElement { style = { flexDirection = FlexDirection.Row, alignItems = Align.Center, marginTop = 2 } };
-            var presetField = new EnumField(_particlePresetKind) { style = { flexGrow = 1 } };
-            presetField.RegisterValueChangedCallback(e => _particlePresetKind = (ParticlePresets.Kind)e.newValue);
-            pRow.Add(presetField);
-            var applyPreset = HoverButton("Apply", () => ApplyParticlePreset(_particlePresetKind), C_AccentD, C_Accent);
-            applyPreset.style.width = 72; applyPreset.style.color = Color.white;
-            applyPreset.SetEnabled(hasNamedSelection);
-            pRow.Add(applyPreset);
-            presetCard.Add(pRow);
-            body.Add(presetCard);
-
-            // existing bindings for this host
-            if (hasNamedSelection)
-            {
-                var listCard = Card();
-                listCard.Add(new Label($"BOUND TO '{elementName}'") { style = { unityFontStyleAndWeight = FontStyle.Bold, color = C_Text } });
-                bool any = false;
-                foreach (var p in _scene.particles)
-                {
-                    if (p.hostElementName != elementName) continue;
-                    any = true;
-                    var rowEl = new VisualElement { style = { flexDirection = FlexDirection.Row, alignItems = Align.Center, marginTop = 2 } };
-                    rowEl.Add(new Label($"{p.id}") { style = { flexGrow = 1, fontSize = 11 } });
-                    var capt = p;
-                    rowEl.Add(new Button(() => { Undo.RecordObject(_scene, "Remove Particle Binding"); _scene.particles.Remove(capt); EditorUtility.SetDirty(_scene); RebuildRightPanel(); })
-                    { text = "x", style = { width = 22 } });
-                    listCard.Add(rowEl);
-                }
-                if (!any) listCard.Add(new Label("None yet.") { style = { color = C_Sub, fontSize = 11 } });
-                body.Add(listCard);
+                var qp = new VisualElement { style = { flexDirection = FlexDirection.Row, alignItems = Align.Center, marginTop = 4 } };
+                var pf = new EnumField(_particlePresetKind) { style = { flexGrow = 1 } };
+                pf.RegisterValueChangedCallback(e => _particlePresetKind = (ParticlePresets.Kind)e.newValue);
+                qp.Add(pf);
+                qp.Add(new Button(() => CreateParticleFromPreset(_particlePresetKind)) { text = "Create", style = { width = 72 } });
+                dz.Add(qp);
+                dz.Add(new HelpBox("Create a Particle System to design (New), start from a preset, or assign an existing one.", HelpBoxMessageType.Info));
+                body.Add(dz);
+                return;
             }
 
-            body.Add(new HelpBox("Particles run in Play Mode via the scene director. Use Setup & Play to preview.", HelpBoxMessageType.Info));
+            // live preview surface (particles emit from its center)
+            _fxPreviewHost = new VisualElement
+            {
+                style = { height = 200, marginTop = 4, overflow = Overflow.Hidden, position = Position.Relative,
+                          backgroundColor = new Color(0.06f, 0.06f, 0.08f),
+                          borderTopLeftRadius = 4, borderTopRightRadius = 4, borderBottomLeftRadius = 4, borderBottomRightRadius = 4 }
+            };
+            dz.Add(_fxPreviewHost);
+
+            var ctrl = new VisualElement { style = { flexDirection = FlexDirection.Row, marginTop = 4 } };
+            ctrl.Add(new Button(FxPlay) { text = "Play", style = { flexGrow = 1 } }.SetIcon("Play", "Animation.Play", "PlayButton", "d_PlayButton"));
+            ctrl.Add(new Button(FxRestart) { text = "Restart", style = { flexGrow = 1 } }.SetIcon("Restart", "Refresh", "d_Refresh"));
+            ctrl.Add(new Button(FxStop) { text = "Stop", style = { flexGrow = 1 } });
+            ctrl.Add(new Button(() => { Selection.activeObject = _fxConfig; EditorGUIUtility.PingObject(_fxConfig); }) { text = "Ping", style = { width = 44 } }.SetIcon("Ping in Project", "d_Search Icon", "Search Icon"));
+            dz.Add(ctrl);
+            body.Add(dz);
+
+            // full property editor (emission / visual / bursts / modules) - Unity's
+            // own inspector for the asset, embedded right here.
+            var inspCard = Card();
+            inspCard.Add(new Label("PROPERTIES") { style = { unityFontStyleAndWeight = FontStyle.Bold, color = C_Text } });
+            inspCard.Add(new InspectorElement(_fxConfig));
+            body.Add(inspCard);
+
+            // start the live preview for this config
+            FxPlay();
+
+            // ---------------- BIND TO SCENE ----------------
+            if (_scene != null)
+            {
+                bool hasNamedSelection = _selectedElement != null && !string.IsNullOrEmpty(_selectedElement.name);
+                string elementName = hasNamedSelection ? _selectedElement.name : null;
+
+                var bindCard = Card();
+                bindCard.Add(new Label("BIND TO SCENE") { style = { unityFontStyleAndWeight = FontStyle.Bold, color = C_Text } });
+                bindCard.Add(SelectedElementBanner());
+
+                var bindBtn = HoverButton(hasNamedSelection ? $"Bind to '{elementName}'" : "Select a named host element", () =>
+                {
+                    if (!hasNamedSelection) return;
+                    Undo.RecordObject(_scene, "Bind Particles");
+                    _scene.particles.Add(new UISceneAnimation.SceneParticleBinding
+                    { id = _fxConfig.name, particleConfig = _fxConfig, hostElementName = elementName, playOnStart = true });
+                    EditorUtility.SetDirty(_scene);
+                    RebuildRightPanel();
+                }, C_AccentD, C_Accent);
+                bindBtn.SetEnabled(hasNamedSelection);
+                bindBtn.style.color = Color.white; bindBtn.style.marginTop = 4;
+                bindCard.Add(bindBtn);
+
+                if (hasNamedSelection)
+                {
+                    bindCard.Add(new Label($"Bound to '{elementName}':") { style = { color = C_Sub, fontSize = 11, marginTop = 6 } });
+                    bool any = false;
+                    foreach (var p in _scene.particles)
+                    {
+                        if (p.hostElementName != elementName) continue;
+                        any = true;
+                        var rowEl = new VisualElement { style = { flexDirection = FlexDirection.Row, alignItems = Align.Center, marginTop = 2 } };
+                        rowEl.Add(new Label($"{p.id}") { style = { flexGrow = 1, fontSize = 11 } });
+                        var capt = p;
+                        rowEl.Add(new Button(() => { Undo.RecordObject(_scene, "Remove Particle Binding"); _scene.particles.Remove(capt); EditorUtility.SetDirty(_scene); RebuildRightPanel(); })
+                        { text = "x", style = { width = 24 } }.SetIcon("Remove binding", "TreeEditor.Trash", "d_TreeEditor.Trash"));
+                        bindCard.Add(rowEl);
+                    }
+                    if (!any) bindCard.Add(new Label("None yet.") { style = { color = C_Sub, fontSize = 11 } });
+                }
+                body.Add(bindCard);
+            }
         }
 
-        // ----- Bindings tab (overview of everything in the scene) -----
-        void BuildBindingsTab(VisualElement body)
+        // ---------- particle designer preview ----------
+        void FxPlay()
         {
-            if (_scene == null) { body.Add(new HelpBox("Assign a scene asset first (Setup tab).", HelpBoxMessageType.Info)); return; }
-
-            // clips
-            var clipCard = Card();
-            clipCard.Add(new Label("CLIP BINDINGS") { style = { unityFontStyleAndWeight = FontStyle.Bold, color = C_Text } });
-            if (_scene.clips.Count == 0)
-                clipCard.Add(new Label("No clips bound.") { style = { color = C_Sub, fontSize = 11 } });
-            for (int i = 0; i < _scene.clips.Count; i++)
-            {
-                int idx = i;
-                var c = _scene.clips[idx];
-                var row = new VisualElement { style = { marginTop = 4, paddingTop = 4, borderTopWidth = 1, borderTopColor = new Color(0,0,0,0.25f) } };
-
-                var top = new VisualElement { style = { flexDirection = FlexDirection.Row, alignItems = Align.Center } };
-                var idF = new TextField { value = c.id, style = { flexGrow = 1 } };
-                idF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Edit Id"); c.id = e.newValue; EditorUtility.SetDirty(_scene); });
-                top.Add(idF);
-                top.Add(new Button(() => { Undo.RecordObject(_scene, "Remove Clip Binding"); _scene.clips.RemoveAt(idx); EditorUtility.SetDirty(_scene); RebuildRightPanel(); })
-                { text = "x", style = { width = 22 } });
-                row.Add(top);
-
-                var clipF = new ObjectField { objectType = typeof(UIAnimationClip), value = c.clip };
-                clipF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Edit Clip"); c.clip = e.newValue as UIAnimationClip; EditorUtility.SetDirty(_scene); });
-                row.Add(clipF);
-
-                var trig = new EnumField("Trigger", c.trigger);
-                trig.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Edit Trigger"); c.trigger = (PlayTrigger)e.newValue; EditorUtility.SetDirty(_scene); });
-                row.Add(trig);
-
-                var rootF = new TextField("Root Element") { value = c.rootElementName };
-                rootF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Edit Root"); c.rootElementName = e.newValue; EditorUtility.SetDirty(_scene); });
-                row.Add(rootF);
-
-                if (_clonedRoot != null)
-                {
-                    var missing = new List<string>();
-                    if (!string.IsNullOrEmpty(c.rootElementName) && !NameExists(c.rootElementName)) missing.Add("root:" + c.rootElementName);
-                    if (c.clip != null)
-                        foreach (var et in c.clip.elements)
-                            if (!string.IsNullOrEmpty(et.elementName) && !NameExists(et.elementName)) missing.Add(et.elementName);
-                    if (missing.Count > 0)
-                        row.Add(new HelpBox("Not found in UXML: " + string.Join(", ", missing), HelpBoxMessageType.Warning));
-                }
-
-                clipCard.Add(row);
-            }
-            body.Add(clipCard);
-
-            // particles
-            var partCard = Card();
-            partCard.Add(new Label("PARTICLE BINDINGS") { style = { unityFontStyleAndWeight = FontStyle.Bold, color = C_Text } });
-            if (_scene.particles.Count == 0)
-                partCard.Add(new Label("No particles bound.") { style = { color = C_Sub, fontSize = 11 } });
-            for (int i = 0; i < _scene.particles.Count; i++)
-            {
-                int idx = i;
-                var p = _scene.particles[idx];
-                var row = new VisualElement { style = { marginTop = 4, paddingTop = 4, borderTopWidth = 1, borderTopColor = new Color(0,0,0,0.25f) } };
-
-                var top = new VisualElement { style = { flexDirection = FlexDirection.Row, alignItems = Align.Center } };
-                var idF = new TextField { value = p.id, style = { flexGrow = 1 } };
-                idF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Edit Id"); p.id = e.newValue; EditorUtility.SetDirty(_scene); });
-                top.Add(idF);
-                top.Add(new Button(() => { Undo.RecordObject(_scene, "Remove Particle Binding"); _scene.particles.RemoveAt(idx); EditorUtility.SetDirty(_scene); RebuildRightPanel(); })
-                { text = "x", style = { width = 22 } });
-                row.Add(top);
-
-                var cfgF = new ObjectField { objectType = typeof(ParticleSystemConfig), value = p.particleConfig };
-                cfgF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Edit Preset"); p.particleConfig = e.newValue as ParticleSystemConfig; EditorUtility.SetDirty(_scene); });
-                row.Add(cfgF);
-
-                var hostF = new TextField("Host Element") { value = p.hostElementName };
-                hostF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Edit Host"); p.hostElementName = e.newValue; EditorUtility.SetDirty(_scene); });
-                row.Add(hostF);
-
-                var playT = new Toggle("Play On Start") { value = p.playOnStart };
-                playT.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Edit PlayOnStart"); p.playOnStart = e.newValue; EditorUtility.SetDirty(_scene); });
-                row.Add(playT);
-
-                if (_clonedRoot != null && !string.IsNullOrEmpty(p.hostElementName) && !NameExists(p.hostElementName))
-                    row.Add(new HelpBox("Host not found in UXML: " + p.hostElementName, HelpBoxMessageType.Warning));
-
-                partCard.Add(row);
-            }
-            body.Add(partCard);
+            FxStop();
+            if (_fxConfig == null || _fxPreviewHost == null) return;
+            _fxEmitter = new ParticleEmitter(_fxConfig, _fxPreviewHost);
+            _fxRunning = true;
+            _fxLast = EditorApplication.timeSinceStartup;
+            EditorApplication.update += FxTick;
         }
 
-        // ----- Manage tab: library + bindings + validation in collapsible sections -----
+        void FxTick()
+        {
+            if (!_fxRunning) return;
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                EditorApplication.update -= FxTick;
+                _fxRunning = false;
+                return;
+            }
+            double now = EditorApplication.timeSinceStartup;
+            float dt = Mathf.Min(0.05f, (float)(now - _fxLast));
+            _fxLast = now;
+            _fxEmitter?.Update(dt);
+            Repaint();
+        }
+
+        void FxStop()
+        {
+            EditorApplication.update -= FxTick;
+            _fxEmitter?.Kill();
+            _fxEmitter = null;
+            _fxRunning = false;
+        }
+
+        void FxRestart() => FxPlay();
+
+        void CreateParticleFlow()
+        {
+            var cfg = ParticlePresets.Create(ParticlePresets.Kind.Sparkle);
+            cfg.name = "NewUIParticle";
+            string path = AssetDatabase.GenerateUniqueAssetPath($"{EnsureFolderPath(ParticlesFolder)}/{cfg.name}.asset");
+            AssetDatabase.CreateAsset(cfg, path);
+            AssetDatabase.SaveAssets();
+            _fxConfig = cfg;
+            RebuildRightPanel();
+        }
+
+        void CreateParticleFromPreset(ParticlePresets.Kind kind)
+        {
+            var cfg = ParticlePresets.Create(kind);
+            string path = AssetDatabase.GenerateUniqueAssetPath($"{EnsureFolderPath(ParticlesFolder)}/{cfg.name}.asset");
+            AssetDatabase.CreateAsset(cfg, path);
+            AssetDatabase.SaveAssets();
+            _fxConfig = cfg;
+            RebuildRightPanel();
+        }
+
+        // ----- Manage tab: library + play order + validation in collapsible sections -----
         void BuildManageTab(VisualElement body)
         {
             if (_scene == null) { body.Add(new HelpBox("Assign a scene asset first (Setup tab).", HelpBoxMessageType.Info)); }
@@ -1342,13 +1367,239 @@ namespace UIToolkit.Animation.Editor
             BuildLibraryTab(lib);
             body.Add(Fold("Library  (all clips & particles)", lib, true));
 
-            var binds = new VisualElement();
-            BuildBindingsTab(binds);
-            body.Add(Fold("Scene Bindings", binds, false));
+            var seqC = new VisualElement();
+            BuildSequenceSection(seqC);
+            body.Add(Fold("Play Order", seqC, true));
+
+            var trg = new VisualElement();
+            BuildTriggersSection(trg);
+            body.Add(Fold("Interaction Triggers", trg, false));
 
             var val = new VisualElement();
             BuildValidateTab(val);
             body.Add(Fold("Validation", val, false));
+        }
+
+        // Event-driven triggers: play a clip when an element is clicked/held/hovered.
+        void BuildTriggersSection(VisualElement body)
+        {
+            if (_scene == null) return;
+
+            var card = Card();
+            card.Add(new Label("INTERACTION TRIGGERS") { style = { unityFontStyleAndWeight = FontStyle.Bold, color = C_Text } });
+            card.Add(new Label("Play a clip when an element is clicked / held / double-clicked / hovered. Pointer events work on both mouse and touch; use Platform for desktop- or mobile-only (e.g. hover is desktop-only).")
+                { style = { color = C_Sub, fontSize = 10, marginBottom = 2, whiteSpace = WhiteSpace.Normal } });
+
+            if (_scene.triggers.Count == 0)
+                card.Add(new Label("No triggers yet.") { style = { color = C_Sub, fontSize = 11 } });
+
+            for (int i = 0; i < _scene.triggers.Count; i++)
+            {
+                int idx = i;
+                var t = _scene.triggers[idx];
+                var row = new VisualElement { style = { marginTop = 4, paddingTop = 4, borderTopWidth = 1, borderTopColor = new Color(0,0,0,0.25f) } };
+
+                var head = new VisualElement { style = { flexDirection = FlexDirection.Row, alignItems = Align.Center } };
+                var elF = new TextField("Element") { value = t.elementName, style = { flexGrow = 1 } };
+                elF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Trigger Element"); t.elementName = e.newValue; EditorUtility.SetDirty(_scene); });
+                head.Add(elF);
+                head.Add(new Button(() => { Undo.RecordObject(_scene, "Remove Trigger"); _scene.triggers.RemoveAt(idx); EditorUtility.SetDirty(_scene); RebuildRightPanel(); }) { text = "x", style = { width = 24 } }
+                    .SetIcon("Remove trigger", "TreeEditor.Trash", "d_TreeEditor.Trash"));
+                row.Add(head);
+
+                var evF = new EnumField("On Event", t.trigger);
+                evF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Trigger Event"); t.trigger = (UITrigger)e.newValue; EditorUtility.SetDirty(_scene); RebuildRightPanel(); });
+                row.Add(evF);
+
+                var clipF = new ObjectField("Play Clip") { objectType = typeof(UIAnimationClip), value = t.clip };
+                clipF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Trigger Clip"); t.clip = e.newValue as UIAnimationClip; EditorUtility.SetDirty(_scene); });
+                row.Add(clipF);
+
+                var platF = new EnumField("Platform", t.platform);
+                platF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Trigger Platform"); t.platform = (TriggerPlatform)e.newValue; EditorUtility.SetDirty(_scene); });
+                row.Add(platF);
+
+                if (t.trigger == UITrigger.Hold)
+                {
+                    var holdF = new FloatField("Hold (s)") { value = t.holdSeconds };
+                    holdF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Trigger Hold"); t.holdSeconds = Mathf.Max(0.05f, e.newValue); EditorUtility.SetDirty(_scene); });
+                    row.Add(holdF);
+                }
+
+                var repF = new IntegerField("Repeat (1=once, 0=forever)") { value = t.loops };
+                repF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Trigger Repeat"); t.loops = Mathf.Max(0, e.newValue); EditorUtility.SetDirty(_scene); });
+                row.Add(repF);
+
+                var ltF = new EnumField("Repeat Type", t.loopType);
+                ltF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Trigger Repeat Type"); t.loopType = (LoopType)e.newValue; EditorUtility.SetDirty(_scene); });
+                row.Add(ltF);
+
+                var ignoreF = new Toggle("Ignore while playing (anti-spam)") { value = t.ignoreWhilePlaying };
+                ignoreF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Trigger Anti-spam"); t.ignoreWhilePlaying = e.newValue; EditorUtility.SetDirty(_scene); });
+                row.Add(ignoreF);
+
+                var cdF = new FloatField("Cooldown (s)") { value = t.cooldown };
+                cdF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Trigger Cooldown"); t.cooldown = Mathf.Max(0f, e.newValue); EditorUtility.SetDirty(_scene); });
+                row.Add(cdF);
+
+                if (_clonedRoot != null && !string.IsNullOrEmpty(t.elementName) && !NameExists(t.elementName))
+                    row.Add(new HelpBox("Element not found in UXML: " + t.elementName, HelpBoxMessageType.Warning));
+
+                card.Add(row);
+            }
+
+            card.Add(new Button(() =>
+            {
+                Undo.RecordObject(_scene, "Add Trigger");
+                _scene.triggers.Add(new UISceneAnimation.InteractionTrigger
+                {
+                    elementName = (_selectedElement != null && !string.IsNullOrEmpty(_selectedElement.name)) ? _selectedElement.name : "",
+                    clip = _activeClip
+                });
+                EditorUtility.SetDirty(_scene);
+                RebuildRightPanel();
+            }) { text = "+ Add Trigger", style = { marginTop = 6 } });
+
+            body.Add(card);
+        }
+
+        // Ordered playlist editor: pick clips, set their order, and choose whether
+        // each repeats (loops) and whether it waits for the previous step.
+        void BuildSequenceSection(VisualElement body)
+        {
+            if (_scene == null) return;
+
+            var card = Card();
+            card.Add(new Label("PLAY ORDER (top to bottom)") { style = { unityFontStyleAndWeight = FontStyle.Bold, color = C_Text } });
+
+            var onStart = new Toggle("Play sequence on start") { value = _scene.playSequenceOnStart };
+            onStart.RegisterValueChangedCallback(e =>
+            {
+                Undo.RecordObject(_scene, "Sequence On Start");
+                _scene.playSequenceOnStart = e.newValue;
+                EditorUtility.SetDirty(_scene);
+            });
+            card.Add(onStart);
+
+            if (_scene.sequence.Count == 0)
+                card.Add(new Label("No steps yet. Add clips below and order them.") { style = { color = C_Sub, fontSize = 11, marginTop = 2 } });
+
+            bool afterInfinite = false;   // steps after a "repeat forever" step never play
+            for (int i = 0; i < _scene.sequence.Count; i++)
+            {
+                int idx = i;
+                var s = _scene.sequence[idx];
+                bool unreachable = afterInfinite;
+                bool parallel = !s.waitForPrevious && idx > 0;   // plays together with previous
+                var step = new VisualElement { style = { marginTop = 4, paddingTop = 4, borderTopWidth = 1, borderTopColor = new Color(0,0,0,0.25f) } };
+                if (parallel)
+                {
+                    // visually group parallel steps under the one above
+                    step.style.paddingLeft = 16;
+                    step.style.borderLeftWidth = 2;
+                    step.style.borderLeftColor = C_Accent;
+                    step.style.borderTopWidth = 0;
+                }
+
+                var head = new VisualElement { style = { flexDirection = FlexDirection.Row, alignItems = Align.Center } };
+                head.Add(new Label(parallel ? "+" : $"#{idx + 1}") { tooltip = parallel ? "Plays together with the step above" : null, style = { width = 26, unityFontStyleAndWeight = FontStyle.Bold, color = parallel ? C_Accent : C_Text } });
+                var clipF = new ObjectField { objectType = typeof(UIAnimationClip), value = s.clip, style = { flexGrow = 1 } };
+                clipF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Clip"); s.clip = e.newValue as UIAnimationClip; EditorUtility.SetDirty(_scene); });
+                head.Add(clipF);
+                head.Add(new Button(() => MoveStep(idx, -1)) { text = "^", tooltip = "Move up", style = { width = 22 } });
+                head.Add(new Button(() => MoveStep(idx, 1)) { text = "v", tooltip = "Move down", style = { width = 22 } });
+                head.Add(new Button(() => { Undo.RecordObject(_scene, "Remove Step"); _scene.sequence.RemoveAt(idx); EditorUtility.SetDirty(_scene); RebuildRightPanel(); }) { text = "x", style = { width = 24 } }
+                    .SetIcon("Remove step", "TreeEditor.Trash", "d_TreeEditor.Trash"));
+                step.Add(head);
+
+                // fields that get disabled when the step is unreachable
+                var fields = new VisualElement();
+
+                var loopsF = new IntegerField("Repeat (1=once, 0=forever)") { value = s.loops, isDelayed = true };
+                loopsF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Repeat"); s.loops = Mathf.Max(0, e.newValue); EditorUtility.SetDirty(_scene); RebuildRightPanel(); });
+                fields.Add(loopsF);
+
+                var loopTypeF = new EnumField("Repeat Type", s.loopType);
+                loopTypeF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Repeat Type"); s.loopType = (LoopType)e.newValue; EditorUtility.SetDirty(_scene); });
+                fields.Add(loopTypeF);
+
+                var delayF = new FloatField("Delay before (s)") { value = s.delay };
+                delayF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Delay"); s.delay = Mathf.Max(0f, e.newValue); EditorUtility.SetDirty(_scene); });
+                fields.Add(delayF);
+
+                var togetherT = new Toggle("Play together with previous (parallel)") { value = !s.waitForPrevious };
+                togetherT.SetEnabled(idx > 0);   // first step has nothing to pair with
+                togetherT.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Parallel"); s.waitForPrevious = !e.newValue; EditorUtility.SetDirty(_scene); RebuildRightPanel(); });
+                fields.Add(togetherT);
+
+                var rootF = new TextField("Root element (optional)") { value = s.rootElementName };
+                rootF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Root"); s.rootElementName = e.newValue; EditorUtility.SetDirty(_scene); });
+                fields.Add(rootF);
+
+                // optional particle on this step (fires at the step's start time)
+                fields.Add(new Label("Particle on this step (optional)") { style = { color = C_Sub, fontSize = 10, marginTop = 4 } });
+                var partF = new ObjectField("Particle") { objectType = typeof(ParticleSystemConfig), value = s.particle };
+                partF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Particle"); s.particle = e.newValue as ParticleSystemConfig; EditorUtility.SetDirty(_scene); });
+                fields.Add(partF);
+                var partHostF = new TextField("Particle Host") { value = s.particleHost };
+                partHostF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Particle Host"); s.particleHost = e.newValue; EditorUtility.SetDirty(_scene); });
+                fields.Add(partHostF);
+                var burstF = new IntegerField("Burst (0 = continuous)") { value = s.particleBurst };
+                burstF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Burst"); s.particleBurst = Mathf.Max(0, e.newValue); EditorUtility.SetDirty(_scene); });
+                fields.Add(burstF);
+
+                step.Add(fields);
+
+                if (unreachable)
+                {
+                    step.style.opacity = 0.45f;
+                    fields.SetEnabled(false);   // head buttons (move/remove) stay usable
+                    step.Add(new HelpBox("Disabled: a step above repeats forever, so this never plays.", HelpBoxMessageType.Warning));
+                }
+                else if (s.clip != null && s.loops == 0)
+                {
+                    step.Add(new Label("Repeats forever - steps below are disabled.") { style = { color = new Color(0.9f,0.78f,0.3f), fontSize = 10, marginTop = 2, whiteSpace = WhiteSpace.Normal } });
+                }
+
+                card.Add(step);
+
+                if (s.clip != null && s.loops == 0) afterInfinite = true;
+            }
+
+            var addRow = new VisualElement { style = { flexDirection = FlexDirection.Row, marginTop = 6 } };
+            addRow.Add(new Button(() =>
+            {
+                Undo.RecordObject(_scene, "Add Clip Step");
+                _scene.sequence.Add(new UISceneAnimation.SequenceStep { id = "step" + (_scene.sequence.Count + 1), clip = _activeClip });
+                EditorUtility.SetDirty(_scene);
+                RebuildRightPanel();
+            }) { text = "+ Clip Step", style = { flexGrow = 1 } });
+            addRow.Add(new Button(() =>
+            {
+                Undo.RecordObject(_scene, "Add Particle Step");
+                _scene.sequence.Add(new UISceneAnimation.SequenceStep { id = "fx" + (_scene.sequence.Count + 1), particle = _fxConfig, particleBurst = 30 });
+                EditorUtility.SetDirty(_scene);
+                RebuildRightPanel();
+            }) { text = "+ Particle Step", style = { flexGrow = 1 } });
+            card.Add(addRow);
+
+            var prevBtn = HoverButton("Preview Sequence", PreviewSequence, C_AccentD, C_Accent);
+            prevBtn.style.marginTop = 4; prevBtn.style.color = Color.white;
+            card.Add(prevBtn);
+
+            body.Add(card);
+        }
+
+        void MoveStep(int idx, int dir)
+        {
+            int j = idx + dir;
+            if (_scene == null || j < 0 || j >= _scene.sequence.Count) return;
+            Undo.RecordObject(_scene, "Reorder Step");
+            var tmp = _scene.sequence[idx];
+            _scene.sequence[idx] = _scene.sequence[j];
+            _scene.sequence[j] = tmp;
+            EditorUtility.SetDirty(_scene);
+            RebuildRightPanel();
         }
 
         // ----- Library section (every animation / particle asset in the project) -----
@@ -1359,7 +1610,8 @@ namespace UIToolkit.Animation.Editor
             var searchField = new TextField { value = _librarySearch, isDelayed = true, style = { flexGrow = 1 } };
             searchField.RegisterValueChangedCallback(e => { _librarySearch = e.newValue; RebuildRightPanel(); });
             topRow.Add(searchField);
-            topRow.Add(new Button(RebuildRightPanel) { text = "Refresh", style = { width = 70 } });
+            topRow.Add(new Button(RebuildRightPanel) { text = "Refresh", style = { width = 28 } }
+                .SetIcon("Refresh list", "Refresh", "d_Refresh"));
             body.Add(topRow);
 
             bool Match(string n) => string.IsNullOrEmpty(_librarySearch)
@@ -1431,12 +1683,13 @@ namespace UIToolkit.Animation.Editor
                 EditorGUIUtility.systemCopyBuffer = $"UIAnimation.Play(\"{clip.name}\", root);";
                 ShowNotification(new GUIContent("Copied: " + clip.name));
             }));
-            btns.Add(WideButton("Ping", () => { Selection.activeObject = clip; EditorGUIUtility.PingObject(clip); }));
+            btns.Add(WideButton("Ping", () => { Selection.activeObject = clip; EditorGUIUtility.PingObject(clip); })
+                .SetIcon("Ping in Project", "d_Search Icon", "Search Icon"));
             btns.Add(WideButton("X", () =>
             {
                 if (EditorUtility.DisplayDialog("Delete Clip", $"Move '{clip.name}' to the trash?\n{path}", "Delete", "Cancel"))
                 { AssetDatabase.MoveAssetToTrash(path); RebuildRightPanel(); }
-            }));
+            }).SetIcon("Delete (to trash)", "TreeEditor.Trash", "d_TreeEditor.Trash"));
             row.Add(btns);
             return row;
         }
@@ -1463,12 +1716,13 @@ namespace UIToolkit.Animation.Editor
             });
             bindBtn.SetEnabled(hasNamedSelection && _scene != null);
             btns.Add(bindBtn);
-            btns.Add(WideButton("Ping", () => { Selection.activeObject = cfg; EditorGUIUtility.PingObject(cfg); }));
+            btns.Add(WideButton("Ping", () => { Selection.activeObject = cfg; EditorGUIUtility.PingObject(cfg); })
+                .SetIcon("Ping in Project", "d_Search Icon", "Search Icon"));
             btns.Add(WideButton("X", () =>
             {
                 if (EditorUtility.DisplayDialog("Delete Preset", $"Move '{cfg.name}' to the trash?\n{path}", "Delete", "Cancel"))
                 { AssetDatabase.MoveAssetToTrash(path); RebuildRightPanel(); }
-            }));
+            }).SetIcon("Delete (to trash)", "TreeEditor.Trash", "d_TreeEditor.Trash"));
             row.Add(btns);
             return row;
         }
@@ -1571,7 +1825,7 @@ namespace UIToolkit.Animation.Editor
             int fixes = 0;
             var clips = new HashSet<UIAnimationClip>();
             if (_activeClip != null) clips.Add(_activeClip);
-            if (_scene != null) foreach (var c in _scene.clips) if (c.clip != null) clips.Add(c.clip);
+            if (_scene != null) foreach (var s in _scene.sequence) if (s.clip != null) clips.Add(s.clip);
             foreach (var clip in clips)
             {
                 Undo.RecordObject(clip, "Auto-fix Clip");
@@ -1624,6 +1878,8 @@ namespace UIToolkit.Animation.Editor
             var director = FindOrCreateDirector();
             if (director == null) return;
 
+            EnsureSomethingPlays();
+
             Undo.RecordObject(director, "Assign Scene");
             director.scene = _scene;
             EditorUtility.SetDirty(director);
@@ -1634,34 +1890,44 @@ namespace UIToolkit.Animation.Editor
             EditorApplication.isPlaying = true;
         }
 
+        // Make sure pressing Setup & Play actually shows something: if nothing is
+        // scheduled, add the active clip to the Play Order and enable auto-play.
+        void EnsureSomethingPlays()
+        {
+            if (_scene == null) return;
+            bool willPlay =
+                (_scene.playSequenceOnStart && _scene.sequence.Exists(s => s.clip != null || s.particle != null))
+                || _scene.particles.Exists(p => p.playOnStart && p.particleConfig != null)
+                || (_scene.triggers != null && _scene.triggers.Count > 0);
+            if (willPlay) return;
+
+            Undo.RecordObject(_scene, "Auto-setup Play");
+            if (_activeClip != null && !_scene.sequence.Exists(s => s.clip == _activeClip))
+                _scene.sequence.Add(new UISceneAnimation.SequenceStep { id = _activeClip.name, clip = _activeClip });
+            _scene.playSequenceOnStart = true;
+            EditorUtility.SetDirty(_scene);
+            ShowNotification(new GUIContent("Nothing was scheduled - added it to Play Order so it plays."));
+        }
+
         UISceneDirector FindOrCreateDirector()
         {
-            var docs = UnityEngine.Object.FindObjectsByType<UIDocument>(FindObjectsSortMode.None);
-
-            // Prefer a UIDocument already using this scene's UXML.
-            UIDocument target = null;
-            foreach (var d in docs)
-                if (d.visualTreeAsset == _scene.uxml) { target = d; break; }
-            if (target == null && docs.Length > 0) target = docs[0];
-
-            if (target == null)
+            // Auto-detects the UI host for the current Unity version:
+            // Panel Renderer on 6.5+, UIDocument on older versions.
+            var host = UIPanel.FindHost();
+            if (host == null)
             {
                 EditorUtility.DisplayDialog("Setup & Play",
-                    "No UIDocument found in the open scene.\n\nAdd a GameObject with a UIDocument (and a PanelSettings asset) that uses this UXML, then press Setup & Play again.",
+                    $"No UI host found in the open scene.\n\nAdd a GameObject with a {UIPanel.HostTypeName} (and a PanelSettings asset) that uses this UXML, then press Setup & Play again.",
                     "OK");
                 return null;
             }
 
-            // Make sure the document renders this scene's UXML.
-            if (target.visualTreeAsset == null && _scene.uxml != null)
-            {
-                Undo.RecordObject(target, "Assign UXML");
-                target.visualTreeAsset = _scene.uxml;
-                EditorUtility.SetDirty(target);
-            }
+            // Make sure the host renders this scene's UXML if it has none yet.
+            if (UIPanel.GetVisualTree(host) == null && _scene.uxml != null)
+                UIPanel.SetVisualTree(host, _scene.uxml);
 
-            var dir = target.GetComponent<UISceneDirector>();
-            if (dir == null) dir = Undo.AddComponent<UISceneDirector>(target.gameObject);
+            var dir = host.GetComponent<UISceneDirector>();
+            if (dir == null) dir = Undo.AddComponent<UISceneDirector>(host);
             return dir;
         }
 
@@ -1820,8 +2086,7 @@ namespace UIToolkit.Animation.Editor
             AssetDatabase.SaveAssets();
 
             Undo.RecordObject(_scene, "Apply Animation Preset");
-            _scene.clips.Add(new UISceneAnimation.SceneClipBinding
-            { id = clip.name, clip = clip, trigger = PlayTrigger.OnEnable });
+            _scene.sequence.Add(new UISceneAnimation.SequenceStep { id = clip.name, clip = clip });
             EditorUtility.SetDirty(_scene);
             SetActiveClip(clip);
         }
@@ -1856,17 +2121,13 @@ namespace UIToolkit.Animation.Editor
         void StartScenePreview()
         {
             if (_scene == null) { EditorUtility.DisplayDialog("Preview Scene", "Assign a scene asset first.", "OK"); return; }
+            UILog.Enabled = _scene.debugLog;
             StopScenePreview();
             ReloadPreview();
             if (_clonedRoot == null) return;
 
-            foreach (var c in _scene.clips)
-            {
-                if (c.clip == null) continue;
-                var root = string.IsNullOrEmpty(c.rootElementName)
-                    ? _clonedRoot : (_clonedRoot.Q<VisualElement>(c.rootElementName) ?? _clonedRoot);
-                _scenePlayers.Add(new ClipPlayer(c.clip, root));
-            }
+            // clips play through the ordered Play Order (sequence)
+            _previewSequence = UISequenceRunner.Build(_scene, _clonedRoot);
             foreach (var p in _scene.particles)
             {
                 if (p.particleConfig == null || !p.playOnStart) continue;
@@ -1885,11 +2146,18 @@ namespace UIToolkit.Animation.Editor
         void ScenePreviewTick()
         {
             if (!_scenePreviewing) return;
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                EditorApplication.update -= ScenePreviewTick;
+                _scenePreviewing = false; _previewSequence = null;
+                return;
+            }
             double now = EditorApplication.timeSinceStartup;
             float dt = Mathf.Min(0.05f, (float)(now - _scenePrevLast));
             _scenePrevLast = now;
             for (int i = 0; i < _scenePlayers.Count; i++) _scenePlayers[i].Update(dt);
             for (int i = 0; i < _sceneEmitters.Count; i++) _sceneEmitters[i].Update(dt);
+            _previewSequence?.Update(dt);
             Repaint();
         }
 
@@ -1899,10 +2167,26 @@ namespace UIToolkit.Animation.Editor
             foreach (var em in _sceneEmitters) em.Kill();
             _sceneEmitters.Clear();
             _scenePlayers.Clear();
+            _previewSequence = null;
             bool was = _scenePreviewing;
             _scenePreviewing = false;
             if (_previewSceneBtn != null) _previewSceneBtn.text = "Preview Scene";
             if (was) ReloadPreview();
+        }
+
+        // Preview the ordered sequence live in the editor.
+        void PreviewSequence()
+        {
+            if (_scene == null) { EditorUtility.DisplayDialog("Sequence", "Assign a scene asset first.", "OK"); return; }
+            UILog.Enabled = _scene.debugLog;
+            StopScenePreview();
+            ReloadPreview();
+            if (_clonedRoot == null) return;
+            _previewSequence = UISequenceRunner.Build(_scene, _clonedRoot);
+            _scenePreviewing = true;
+            _scenePrevLast = EditorApplication.timeSinceStartup;
+            EditorApplication.update += ScenePreviewTick;
+            if (_previewSceneBtn != null) _previewSceneBtn.text = "Stop Preview";
         }
 
         void OnDisable()
@@ -1911,7 +2195,9 @@ namespace UIToolkit.Animation.Editor
             foreach (var em in _sceneEmitters) em.Kill();
             _sceneEmitters.Clear();
             _scenePlayers.Clear();
+            _previewSequence = null;
             _scenePreviewing = false;
+            FxStop();
         }
 
         // True when a named element resolves under the loaded preview tree.

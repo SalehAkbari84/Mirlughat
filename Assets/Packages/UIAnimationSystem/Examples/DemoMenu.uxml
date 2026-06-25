@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- A tiny sample menu. Every element that should be animated has a name. -->
+    <ui:VisualElement name="root" style="flex-grow:1; align-items:center; justify-content:center; background-color:rgb(24,26,32);">
+        <ui:VisualElement name="panel" style="width:420px; padding:24px; align-items:center; background-color:rgb(38,41,52); border-top-left-radius:14px; border-top-right-radius:14px; border-bottom-left-radius:14px; border-bottom-right-radius:14px;">
+            <ui:Label name="title" text="MAIN MENU" style="font-size:30px; color:rgb(235,238,245); -unity-font-style:bold; margin-bottom:18px;" />
+            <ui:Button name="playButton" text="Play" style="width:240px; height:46px; margin-bottom:10px; font-size:16px;" />
+            <ui:Button name="settingsButton" text="Settings" style="width:240px; height:46px; margin-bottom:10px; font-size:16px;" />
+            <ui:Button name="quitButton" text="Quit" style="width:240px; height:46px; font-size:16px;" />
+            <ui:VisualElement name="fxHost" style="position:absolute; left:50%; top:0;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

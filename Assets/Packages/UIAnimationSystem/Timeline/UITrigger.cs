@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace UIToolkit.Animation.Timeline
@@ -6,14 +7,17 @@ namespace UIToolkit.Animation.Timeline
     // When an animation should fire.
     public enum UITrigger
     {
-        PointerEnter,   // hover in
-        PointerLeave,   // hover out
-        Click,          // single click
-        DoubleClick,    // two clicks
-        PointerDown,    // press
-        PointerUp,      // release
-        Hold            // press and hold for holdSeconds
+        PointerEnter,   // hover in (desktop only - touch has no hover)
+        PointerLeave,   // hover out (desktop only)
+        Click,          // single click / tap
+        DoubleClick,    // two clicks / double tap
+        PointerDown,    // press / touch down
+        PointerUp,      // release / touch up
+        Hold            // press and hold for holdSeconds (long press)
     }
+
+    // Which platform an interaction trigger applies to.
+    public enum TriggerPlatform { Both, DesktopOnly, MobileOnly }
 
     // Bind a pre-made animation (authored in the tool, called by name) to an
     // element and choose WHEN it plays:
@@ -28,10 +32,44 @@ namespace UIToolkit.Animation.Timeline
     public static class UITriggerExtensions
     {
         public static void PlayOn(this VisualElement ve, UITrigger trigger, string animationName, float holdSeconds = 0.5f)
-            => PlayOn(ve, trigger, () => UIAnimation.Play(animationName, ve), holdSeconds);
+            => BindClip(ve, trigger, () => UIAnimation.Get(animationName), 1, LoopType.Restart, true, 0f, holdSeconds);
 
         public static void PlayOn(this VisualElement ve, UITrigger trigger, UIAnimationClip clip, float holdSeconds = 0.5f)
-            => PlayOn(ve, trigger, () => { if (clip != null) clip.Play(ve); }, holdSeconds);
+            => BindClip(ve, trigger, () => clip, 1, LoopType.Restart, true, 0f, holdSeconds);
+
+        // Full clip trigger with spam control (used by the scene director).
+        //   ignoreWhilePlaying = true  -> re-firing while the clip still plays is ignored.
+        //   ignoreWhilePlaying = false -> re-firing restarts it (still a single instance).
+        //   cooldown                   -> minimum seconds between fires (0 = none).
+        public static void PlayOnClip(this VisualElement ve, UITrigger trigger, UIAnimationClip clip,
+            int loops, LoopType loopType, bool ignoreWhilePlaying, float cooldown, float holdSeconds)
+            => BindClip(ve, trigger, () => clip, loops, loopType, ignoreWhilePlaying, cooldown, holdSeconds);
+
+        // Wires a clip to an event with anti-spam: never stacks players, and
+        // optionally ignores re-fires while playing or within a cooldown window.
+        static void BindClip(VisualElement ve, UITrigger trigger, Func<UIAnimationClip> clipGetter,
+            int loops, LoopType loopType, bool ignoreWhilePlaying, float cooldown, float holdSeconds)
+        {
+            if (ve == null) return;
+            ClipPlayer current = null;
+            float lastFire = -9999f;
+            PlayOn(ve, trigger, () =>
+            {
+                if (cooldown > 0f && Time.unscaledTime - lastFire < cooldown) return;
+
+                var clip = clipGetter();
+                if (clip == null) return;
+
+                if (current != null && current.State == TweenState.Running)
+                {
+                    if (ignoreWhilePlaying) return;   // spam-proof: let it finish
+                    current.Kill();                   // otherwise restart (single instance)
+                }
+
+                current = clip.Play(ve).SetLoopOverride(loops != 1, loops, loopType);
+                lastFire = Time.unscaledTime;
+            }, holdSeconds);
+        }
 
         // Most general form: run any action on the chosen trigger.
         public static void PlayOn(this VisualElement ve, UITrigger trigger, Action action, float holdSeconds = 0.5f)

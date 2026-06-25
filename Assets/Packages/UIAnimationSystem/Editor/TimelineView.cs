@@ -358,15 +358,12 @@ namespace UIToolkit.Animation.Editor
         {
             var bar = new Toolbar();
 
-            var toStart = new ToolbarButton(() => SetPlayhead(0f)) { text = "|<" };
-            toStart.tooltip = "Go to start";
-            bar.Add(toStart);
-
-            bar.Add(new ToolbarButton(TogglePlay) { text = "Play", style = { width = 50 } });
-
-            var toEnd = new ToolbarButton(() => SetPlayhead(_clip != null ? _clip.Duration : 0f)) { text = ">|" };
-            toEnd.tooltip = "Go to end";
-            bar.Add(toEnd);
+            bar.Add(new ToolbarButton(() => SetPlayhead(0f)) { text = "|<" }
+                .SetIcon("Go to start", "Animation.FirstKey", "d_Animation.FirstKey"));
+            bar.Add(new ToolbarButton(TogglePlay) { text = "Play" }
+                .SetIcon("Play / Pause (Space)", "Animation.Play", "d_Animation.Play", "PlayButton", "d_PlayButton"));
+            bar.Add(new ToolbarButton(() => SetPlayhead(_clip != null ? _clip.Duration : 0f)) { text = ">|" }
+                .SetIcon("Go to end", "Animation.LastKey", "d_Animation.LastKey"));
 
             bar.Add(new ToolbarSpacer());
 
@@ -395,7 +392,8 @@ namespace UIToolkit.Animation.Editor
             bar.Add(zoom);
 
             bar.Add(new ToolbarSpacer());
-            bar.Add(new ToolbarButton(AddElementDialog) { text = "+ Element" });
+            bar.Add(new ToolbarButton(AddElementDialog) { text = "+ Element" }
+                .SetIcon("Add element track", "Toolbar Plus", "d_Toolbar Plus"));
 
             root.Add(bar);
         }
@@ -577,13 +575,15 @@ namespace UIToolkit.Animation.Editor
             });
             head.Add(nameField);
 
-            head.Add(new Button(() => ShowAddPropertyMenu(el)) { text = "+", tooltip = "Add property track", style = { width = 22 } });
+            head.Add(new Button(() => ShowAddPropertyMenu(el)) { text = "+", style = { width = 24 } }
+                .SetIcon("Add property track", "Toolbar Plus", "d_Toolbar Plus"));
             head.Add(new Button(() =>
             {
                 _clip.elements.Remove(el); MarkDirty();
                 StructureChanged?.Invoke();
                 RebuildAll();
-            }) { text = "x", tooltip = "Remove element", style = { width = 22 } });
+            }) { text = "x", style = { width = 24 } }
+                .SetIcon("Remove element", "TreeEditor.Trash", "d_TreeEditor.Trash"));
             wrap.Add(head);
 
             if (el.expanded)
@@ -605,7 +605,8 @@ namespace UIToolkit.Animation.Editor
             row.Add(new Label("    " + PropertyMeta.DisplayName(pt.property))
             { style = { width = NameColWidth - 48, unityTextAlign = TextAnchor.MiddleLeft, fontSize = 11 } });
             row.Add(new Button(() => ShowTrackEaseMenu(pt)) { text = "E", tooltip = "Set ease for all keys in this track", style = { width = 22 } });
-            row.Add(new Button(() => AddKeyAtPlayhead(el, pt)) { text = "+", tooltip = "Add key at playhead", style = { width = 22 } });
+            row.Add(new Button(() => AddKeyAtPlayhead(el, pt)) { text = "+", style = { width = 24 } }
+                .SetIcon("Add key at playhead", "Animation.AddKeyframe", "d_Animation.AddKeyframe"));
 
             var lane = new VisualElement { style = { flexGrow = 1, position = Position.Relative } };
 
@@ -1012,13 +1013,15 @@ namespace UIToolkit.Animation.Editor
         {
             if (!_playing || _clip == null) return;
             double now = EditorApplication.timeSinceStartup;
-            float dt = (float)(now - _lastTime);
+            float dt = Mathf.Min(0.05f, (float)(now - _lastTime));   // clamp dt: no jump after an editor stall
             _lastTime = now;
             _playhead += dt * _clip.playbackSpeed;
-            if (_playhead >= _clip.Duration)
+            float dur = _clip.Duration;
+            if (_playhead >= dur)
             {
-                if (_clip.loop) _playhead = 0f;
-                else { _playhead = _clip.Duration; _playing = false; }
+                // carry the overshoot instead of resetting to 0 (no loop hitch)
+                if (dur > 0f && _clip.loop) _playhead = Mathf.Repeat(_playhead, dur);
+                else { _playhead = dur; _playing = false; }
             }
             SampleToPreview();
             UpdatePlayheadVisual();

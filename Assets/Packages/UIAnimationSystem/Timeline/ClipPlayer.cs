@@ -20,6 +20,12 @@ namespace UIToolkit.Animation.Timeline
         bool _started;
         float _lastEventT = -1f;
 
+        // optional per-instance loop override (used by sequences/playlists)
+        bool _hasLoopOverride;
+        bool _loopOv;
+        int _loopsOv;
+        LoopType _loopTypeOv;
+
         readonly Dictionary<PropertyTrack, float> _baseFloat = new Dictionary<PropertyTrack, float>();
 
         Action _onComplete;
@@ -38,9 +44,19 @@ namespace UIToolkit.Animation.Timeline
             {
                 if (_clip == null) return 0f;
                 float once = _clip.Duration / Mathf.Max(0.01f, _clip.playbackSpeed);
-                int count = (_clip.loop && _clip.loops > 0) ? _clip.loops : 1;
+                bool loop = _hasLoopOverride ? _loopOv : _clip.loop;
+                int loops = _hasLoopOverride ? _loopsOv : _clip.loops;
+                int count = (loop && loops > 0) ? loops : 1;
                 return once * count;
             }
+        }
+
+        // Override the clip's loop settings for this instance only (non-destructive).
+        // loops: 1 = play once, 0 (or less) = repeat forever, N = repeat N times.
+        public ClipPlayer SetLoopOverride(bool loop, int loops, LoopType type)
+        {
+            _hasLoopOverride = true; _loopOv = loop; _loopsOv = loops; _loopTypeOv = type;
+            return this;
         }
 
         // root is the element under which the named targets are searched.
@@ -81,8 +97,9 @@ namespace UIToolkit.Animation.Timeline
                     ? _root
                     : _root.Q<VisualElement>(el.elementName);
                 if (target != null) _resolved[el.elementName] = target;
-                else Debug.LogWarning($"[ClipPlayer] Element '{el.elementName}' not found under '{_root.name}'.");
+                else UILog.Warn($"ClipPlayer '{(_clip ? _clip.name : "?")}': element '{el.elementName}' not found under '{_root.name}'.");
             }
+            UILog.Log($"ClipPlayer '{(_clip ? _clip.name : "?")}': resolved {_resolved.Count}/{_clip.elements.Count} element(s) under '{_root.name}'.");
         }
 
         public ClipPlayer SetId(object id) { Id = id; return this; }
@@ -152,32 +169,45 @@ namespace UIToolkit.Animation.Timeline
             float dur = _clip.Duration;
             if (dur <= 0f) { Sample(0f); State = TweenState.Completed; _onComplete?.Invoke(); return true; }
 
+            bool hasEvents = OnEvent != null && _clip.events != null && _clip.events.Count > 0;
+
             _elapsed += deltaTime * _clip.playbackSpeed;
-            float t = Mathf.Clamp(_elapsed, 0f, dur);
-            Sample(_isForward ? t : dur - t);
 
-            if (OnEvent != null && _clip.events != null && _clip.events.Count > 0)
-            {
-                FireEvents(_lastEventT, t);
-                _lastEventT = t;
-            }
-
+            // Resolve the loop boundary BEFORE sampling, carrying the overshoot so
+            // a repeating clip has no one-frame hitch and loses no time.
             if (_elapsed >= dur)
             {
+                bool loop = _hasLoopOverride ? _loopOv : _clip.loop;
+                int loopsCount = _hasLoopOverride ? _loopsOv : _clip.loops;
+                LoopType lt = _hasLoopOverride ? _loopTypeOv : _clip.loopType;
+                bool infinite = loop && loopsCount <= 0;
+
                 _loopsDone++;
                 _onStepComplete?.Invoke();
+                if (hasEvents) FireEvents(_lastEventT, dur);   // finish this pass's events
 
-                bool infinite = _clip.loop && _clip.loops <= 0;
-                bool more = _clip.loop && (infinite || _loopsDone < _clip.loops);
+                bool more = loop && (infinite || _loopsDone < loopsCount);
                 if (!more)
                 {
+                    Sample(_isForward ? dur : 0f);
                     State = TweenState.Completed;
                     _onComplete?.Invoke();
                     return true;
                 }
-                _elapsed = 0f;
+
+                _elapsed -= dur;            // carry overshoot instead of resetting to 0
+                if (_elapsed > dur) _elapsed = Mathf.Repeat(_elapsed, dur); // guard huge frames
                 _lastEventT = -1f;
-                if (_clip.loopType == LoopType.Yoyo) _isForward = !_isForward;
+                if (lt == LoopType.Yoyo) _isForward = !_isForward;
+            }
+
+            float t = Mathf.Clamp(_elapsed, 0f, dur);
+            Sample(_isForward ? t : dur - t);
+
+            if (hasEvents)
+            {
+                FireEvents(_lastEventT, t);
+                _lastEventT = t;
             }
             return false;
         }
