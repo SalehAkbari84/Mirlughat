@@ -1481,119 +1481,197 @@ namespace UIToolkit.Animation.Editor
             });
             card.Add(onStart);
 
+            var startSecF = new TextField("Auto-play section (empty = all)") { value = _scene.startSection };
+            startSecF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Start Section"); _scene.startSection = e.newValue; EditorUtility.SetDirty(_scene); });
+            card.Add(startSecF);
+
             if (_scene.sequence.Count == 0)
-                card.Add(new Label("No steps yet. Add clips below and order them.") { style = { color = C_Sub, fontSize = 11, marginTop = 2 } });
+                card.Add(new Label("No steps yet. Add a section, then clips/particles.") { style = { color = C_Sub, fontSize = 11, marginTop = 2 } });
 
-            bool afterInfinite = false;   // steps after a "repeat forever" step never play
-            for (int i = 0; i < _scene.sequence.Count; i++)
+            // distinct sections in order of first appearance
+            var sections = new List<string>();
+            foreach (var st in _scene.sequence)
             {
-                int idx = i;
-                var s = _scene.sequence[idx];
-                bool unreachable = afterInfinite;
-                bool parallel = !s.waitForPrevious && idx > 0;   // plays together with previous
-                var step = new VisualElement { style = { marginTop = 4, paddingTop = 4, borderTopWidth = 1, borderTopColor = new Color(0,0,0,0.25f) } };
-                if (parallel)
-                {
-                    // visually group parallel steps under the one above
-                    step.style.paddingLeft = 16;
-                    step.style.borderLeftWidth = 2;
-                    step.style.borderLeftColor = C_Accent;
-                    step.style.borderTopWidth = 0;
-                }
-
-                var head = new VisualElement { style = { flexDirection = FlexDirection.Row, alignItems = Align.Center } };
-                head.Add(new Label(parallel ? "+" : $"#{idx + 1}") { tooltip = parallel ? "Plays together with the step above" : null, style = { width = 26, unityFontStyleAndWeight = FontStyle.Bold, color = parallel ? C_Accent : C_Text } });
-                var clipF = new ObjectField { objectType = typeof(UIAnimationClip), value = s.clip, style = { flexGrow = 1 } };
-                clipF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Clip"); s.clip = e.newValue as UIAnimationClip; EditorUtility.SetDirty(_scene); });
-                head.Add(clipF);
-                head.Add(new Button(() => MoveStep(idx, -1)) { text = "^", tooltip = "Move up", style = { width = 22 } });
-                head.Add(new Button(() => MoveStep(idx, 1)) { text = "v", tooltip = "Move down", style = { width = 22 } });
-                head.Add(new Button(() => { Undo.RecordObject(_scene, "Remove Step"); _scene.sequence.RemoveAt(idx); EditorUtility.SetDirty(_scene); RebuildRightPanel(); }) { text = "x", style = { width = 24 } }
-                    .SetIcon("Remove step", "TreeEditor.Trash", "d_TreeEditor.Trash"));
-                step.Add(head);
-
-                // fields that get disabled when the step is unreachable
-                var fields = new VisualElement();
-
-                var loopsF = new IntegerField("Repeat (1=once, 0=forever)") { value = s.loops, isDelayed = true };
-                loopsF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Repeat"); s.loops = Mathf.Max(0, e.newValue); EditorUtility.SetDirty(_scene); RebuildRightPanel(); });
-                fields.Add(loopsF);
-
-                var loopTypeF = new EnumField("Repeat Type", s.loopType);
-                loopTypeF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Repeat Type"); s.loopType = (LoopType)e.newValue; EditorUtility.SetDirty(_scene); });
-                fields.Add(loopTypeF);
-
-                var delayF = new FloatField("Delay before (s)") { value = s.delay };
-                delayF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Delay"); s.delay = Mathf.Max(0f, e.newValue); EditorUtility.SetDirty(_scene); });
-                fields.Add(delayF);
-
-                var togetherT = new Toggle("Play together with previous (parallel)") { value = !s.waitForPrevious };
-                togetherT.SetEnabled(idx > 0);   // first step has nothing to pair with
-                togetherT.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Parallel"); s.waitForPrevious = !e.newValue; EditorUtility.SetDirty(_scene); RebuildRightPanel(); });
-                fields.Add(togetherT);
-
-                var rootF = new TextField("Root element (optional)") { value = s.rootElementName };
-                rootF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Root"); s.rootElementName = e.newValue; EditorUtility.SetDirty(_scene); });
-                fields.Add(rootF);
-
-                // optional particle on this step (fires at the step's start time)
-                fields.Add(new Label("Particle on this step (optional)") { style = { color = C_Sub, fontSize = 10, marginTop = 4 } });
-                var partF = new ObjectField("Particle") { objectType = typeof(ParticleSystemConfig), value = s.particle };
-                partF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Particle"); s.particle = e.newValue as ParticleSystemConfig; EditorUtility.SetDirty(_scene); });
-                fields.Add(partF);
-                var partHostF = new TextField("Particle Host") { value = s.particleHost };
-                partHostF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Particle Host"); s.particleHost = e.newValue; EditorUtility.SetDirty(_scene); });
-                fields.Add(partHostF);
-                var burstF = new IntegerField("Burst (0 = continuous)") { value = s.particleBurst };
-                burstF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Burst"); s.particleBurst = Mathf.Max(0, e.newValue); EditorUtility.SetDirty(_scene); });
-                fields.Add(burstF);
-
-                step.Add(fields);
-
-                if (unreachable)
-                {
-                    step.style.opacity = 0.45f;
-                    fields.SetEnabled(false);   // head buttons (move/remove) stay usable
-                    step.Add(new HelpBox("Disabled: a step above repeats forever, so this never plays.", HelpBoxMessageType.Warning));
-                }
-                else if (s.clip != null && s.loops == 0)
-                {
-                    step.Add(new Label("Repeats forever - steps below are disabled.") { style = { color = new Color(0.9f,0.78f,0.3f), fontSize = 10, marginTop = 2, whiteSpace = WhiteSpace.Normal } });
-                }
-
-                card.Add(step);
-
-                if (s.clip != null && s.loops == 0) afterInfinite = true;
+                string sec = string.IsNullOrEmpty(st.section) ? "Main" : st.section;
+                if (!sections.Contains(sec)) sections.Add(sec);
             }
 
-            var addRow = new VisualElement { style = { flexDirection = FlexDirection.Row, marginTop = 6 } };
-            addRow.Add(new Button(() =>
+            foreach (var section in sections)
             {
-                Undo.RecordObject(_scene, "Add Clip Step");
-                _scene.sequence.Add(new UISceneAnimation.SequenceStep { id = "step" + (_scene.sequence.Count + 1), clip = _activeClip });
-                EditorUtility.SetDirty(_scene);
-                RebuildRightPanel();
-            }) { text = "+ Clip Step", style = { flexGrow = 1 } });
-            addRow.Add(new Button(() =>
-            {
-                Undo.RecordObject(_scene, "Add Particle Step");
-                _scene.sequence.Add(new UISceneAnimation.SequenceStep { id = "fx" + (_scene.sequence.Count + 1), particle = _fxConfig, particleBurst = 30 });
-                EditorUtility.SetDirty(_scene);
-                RebuildRightPanel();
-            }) { text = "+ Particle Step", style = { flexGrow = 1 } });
-            card.Add(addRow);
+                string secName = section;
 
-            var prevBtn = HoverButton("Preview Sequence", PreviewSequence, C_AccentD, C_Accent);
+                // section header (rename + preview just this section)
+                var secHead = new VisualElement { style = { flexDirection = FlexDirection.Row, alignItems = Align.Center, backgroundColor = C_AccentD, marginTop = 8,
+                    paddingLeft = 6, paddingRight = 4, paddingTop = 2, paddingBottom = 2, borderTopLeftRadius = 4, borderTopRightRadius = 4 } };
+                secHead.Add(new Label("SECTION") { style = { fontSize = 9, color = C_Sub, marginRight = 6 } });
+                var nameF = new TextField { value = secName, isDelayed = true, style = { flexGrow = 1 } };
+                nameF.RegisterValueChangedCallback(e => RenameSection(secName, e.newValue));
+                secHead.Add(nameF);
+                secHead.Add(new Button(() => PreviewSequence(secName)) { text = "Preview", style = { width = 64 } });
+                card.Add(secHead);
+
+                bool afterInfinite = false;   // per-section: steps after a forever-step never play
+                bool firstInSection = true;
+                for (int i = 0; i < _scene.sequence.Count; i++)
+                {
+                    var s = _scene.sequence[i];
+                    string sec = string.IsNullOrEmpty(s.section) ? "Main" : s.section;
+                    if (sec != secName) continue;
+                    bool parallel = !s.waitForPrevious && !firstInSection;
+                    card.Add(BuildSequenceStepRow(i, afterInfinite, parallel, firstInSection));
+                    if (s.clip != null && s.loops == 0) afterInfinite = true;
+                    firstInSection = false;
+                }
+
+                var addRow = new VisualElement { style = { flexDirection = FlexDirection.Row, marginTop = 4 } };
+                addRow.Add(new Button(() => AddSequenceStep(secName, _activeClip, null)) { text = "+ Clip", style = { flexGrow = 1 } });
+                addRow.Add(new Button(() => AddSequenceStep(secName, null, _fxConfig)) { text = "+ Particle", style = { flexGrow = 1 } });
+                card.Add(addRow);
+            }
+
+            card.Add(new Button(AddSection) { text = "+ Add Section", style = { marginTop = 8 } });
+
+            var prevBtn = HoverButton("Preview All", () => PreviewSequence(null), C_AccentD, C_Accent);
             prevBtn.style.marginTop = 4; prevBtn.style.color = Color.white;
             card.Add(prevBtn);
 
             body.Add(card);
         }
 
+        static string NormSec(string s) => string.IsNullOrEmpty(s) ? "Main" : s;
+
+        // Build one Play Order step row (used inside the per-section loop).
+        VisualElement BuildSequenceStepRow(int idx, bool unreachable, bool parallel, bool firstInSection)
+        {
+            var s = _scene.sequence[idx];
+            var step = new VisualElement { style = { marginTop = 4, paddingTop = 4, borderTopWidth = 1, borderTopColor = new Color(0,0,0,0.25f) } };
+            if (parallel)
+            {
+                // visually group parallel steps under the one above
+                step.style.paddingLeft = 16;
+                step.style.borderLeftWidth = 2;
+                step.style.borderLeftColor = C_Accent;
+                step.style.borderTopWidth = 0;
+            }
+
+            var head = new VisualElement { style = { flexDirection = FlexDirection.Row, alignItems = Align.Center } };
+            head.Add(new Label(parallel ? "+" : $"#{idx + 1}") { tooltip = parallel ? "Plays together with the step above" : null, style = { width = 26, unityFontStyleAndWeight = FontStyle.Bold, color = parallel ? C_Accent : C_Text } });
+            var clipF = new ObjectField { objectType = typeof(UIAnimationClip), value = s.clip, style = { flexGrow = 1 } };
+            clipF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Clip"); s.clip = e.newValue as UIAnimationClip; EditorUtility.SetDirty(_scene); });
+            head.Add(clipF);
+            head.Add(new Button(() => MoveStep(idx, -1)) { text = "^", tooltip = "Move up", style = { width = 22 } });
+            head.Add(new Button(() => MoveStep(idx, 1)) { text = "v", tooltip = "Move down", style = { width = 22 } });
+            head.Add(new Button(() => { Undo.RecordObject(_scene, "Remove Step"); _scene.sequence.RemoveAt(idx); EditorUtility.SetDirty(_scene); RebuildRightPanel(); }) { text = "x", style = { width = 24 } }
+                .SetIcon("Remove step", "TreeEditor.Trash", "d_TreeEditor.Trash"));
+            step.Add(head);
+
+            // fields that get disabled when the step is unreachable
+            var fields = new VisualElement();
+
+            var moveSecF = new TextField("Section") { value = NormSec(s.section), isDelayed = true };
+            moveSecF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Section"); s.section = string.IsNullOrEmpty(e.newValue) ? "Main" : e.newValue; EditorUtility.SetDirty(_scene); RebuildRightPanel(); });
+            fields.Add(moveSecF);
+
+            var loopsF = new IntegerField("Repeat (1=once, 0=forever)") { value = s.loops, isDelayed = true };
+            loopsF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Repeat"); s.loops = Mathf.Max(0, e.newValue); EditorUtility.SetDirty(_scene); RebuildRightPanel(); });
+            fields.Add(loopsF);
+
+            var loopTypeF = new EnumField("Repeat Type", s.loopType);
+            loopTypeF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Repeat Type"); s.loopType = (LoopType)e.newValue; EditorUtility.SetDirty(_scene); });
+            fields.Add(loopTypeF);
+
+            var intervalF = new FloatField("Repeat every (s)  [gap between repeats]") { value = s.repeatInterval };
+            intervalF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Repeat Interval"); s.repeatInterval = Mathf.Max(0f, e.newValue); EditorUtility.SetDirty(_scene); });
+            fields.Add(intervalF);
+
+            var delayF = new FloatField("Delay before (s)") { value = s.delay };
+            delayF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Delay"); s.delay = Mathf.Max(0f, e.newValue); EditorUtility.SetDirty(_scene); });
+            fields.Add(delayF);
+
+            var togetherT = new Toggle("Play together with previous (parallel)") { value = !s.waitForPrevious };
+            togetherT.SetEnabled(!firstInSection);   // first in section has nothing to pair with
+            togetherT.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Parallel"); s.waitForPrevious = !e.newValue; EditorUtility.SetDirty(_scene); RebuildRightPanel(); });
+            fields.Add(togetherT);
+
+            var rootF = new TextField("Root element (optional)") { value = s.rootElementName };
+            rootF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Root"); s.rootElementName = e.newValue; EditorUtility.SetDirty(_scene); });
+            fields.Add(rootF);
+
+            // optional particle on this step (fires at the step's start time)
+            fields.Add(new Label("Particle on this step (optional)") { style = { color = C_Sub, fontSize = 10, marginTop = 4 } });
+            var partF = new ObjectField("Particle") { objectType = typeof(ParticleSystemConfig), value = s.particle };
+            partF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Particle"); s.particle = e.newValue as ParticleSystemConfig; EditorUtility.SetDirty(_scene); });
+            fields.Add(partF);
+            var partHostF = new TextField("Particle Host") { value = s.particleHost };
+            partHostF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Particle Host"); s.particleHost = e.newValue; EditorUtility.SetDirty(_scene); });
+            fields.Add(partHostF);
+            var burstF = new IntegerField("Burst (0 = continuous)") { value = s.particleBurst };
+            burstF.RegisterValueChangedCallback(e => { Undo.RecordObject(_scene, "Step Burst"); s.particleBurst = Mathf.Max(0, e.newValue); EditorUtility.SetDirty(_scene); });
+            fields.Add(burstF);
+
+            step.Add(fields);
+
+            if (unreachable)
+            {
+                step.style.opacity = 0.45f;
+                fields.SetEnabled(false);   // head buttons (move/remove) stay usable
+                step.Add(new HelpBox("Disabled: a step above in this section repeats forever, so this never plays.", HelpBoxMessageType.Warning));
+            }
+            else if (s.clip != null && s.loops == 0)
+            {
+                step.Add(new Label("Repeats forever - later steps in this section are disabled.") { style = { color = new Color(0.9f,0.78f,0.3f), fontSize = 10, marginTop = 2, whiteSpace = WhiteSpace.Normal } });
+            }
+
+            return step;
+        }
+
+        void RenameSection(string oldName, string newName)
+        {
+            if (_scene == null || string.IsNullOrEmpty(newName) || newName == oldName) return;
+            Undo.RecordObject(_scene, "Rename Section");
+            foreach (var s in _scene.sequence)
+                if (NormSec(s.section) == oldName) s.section = newName;
+            if (_scene.startSection == oldName) _scene.startSection = newName;
+            EditorUtility.SetDirty(_scene);
+            RebuildRightPanel();
+        }
+
+        void AddSequenceStep(string section, UIAnimationClip clip, ParticleSystemConfig particle)
+        {
+            if (_scene == null) return;
+            Undo.RecordObject(_scene, "Add Step");
+            _scene.sequence.Add(new UISceneAnimation.SequenceStep
+            {
+                id = (clip != null ? "step" : "fx") + (_scene.sequence.Count + 1),
+                section = NormSec(section),
+                clip = clip,
+                particle = particle,
+                particleBurst = particle != null ? 30 : 0
+            });
+            EditorUtility.SetDirty(_scene);
+            RebuildRightPanel();
+        }
+
+        void AddSection()
+        {
+            if (_scene == null) return;
+            var existing = new HashSet<string>();
+            foreach (var s in _scene.sequence) existing.Add(NormSec(s.section));
+            string name = "Section"; int n = 1;
+            while (existing.Contains(name)) name = "Section" + (++n);
+            AddSequenceStep(name, _activeClip, null);   // a section exists once it has a step
+        }
+
+        // Move a step relative to the nearest neighbour IN THE SAME SECTION, so
+        // reordering stays within the visual group.
         void MoveStep(int idx, int dir)
         {
-            int j = idx + dir;
-            if (_scene == null || j < 0 || j >= _scene.sequence.Count) return;
+            if (_scene == null || idx < 0 || idx >= _scene.sequence.Count) return;
+            string sec = NormSec(_scene.sequence[idx].section);
+            int j = -1;
+            for (int k = idx + dir; k >= 0 && k < _scene.sequence.Count; k += dir)
+                if (NormSec(_scene.sequence[k].section) == sec) { j = k; break; }
+            if (j < 0) return;
             Undo.RecordObject(_scene, "Reorder Step");
             var tmp = _scene.sequence[idx];
             _scene.sequence[idx] = _scene.sequence[j];
@@ -1881,7 +1959,8 @@ namespace UIToolkit.Animation.Editor
             EnsureSomethingPlays();
 
             Undo.RecordObject(director, "Assign Scene");
-            director.scene = _scene;
+            if (director.scenes == null) director.scenes = new System.Collections.Generic.List<UISceneAnimation>();
+            if (!director.scenes.Contains(_scene)) director.scenes.Add(_scene);   // supports multiple scenes
             EditorUtility.SetDirty(director);
             if (director.gameObject.scene.IsValid())
                 EditorSceneManager.MarkSceneDirty(director.gameObject.scene);
@@ -2032,10 +2111,13 @@ namespace UIToolkit.Animation.Editor
         // ===============================================================
         // Clips live under Resources so UIAnimation.Play(name, root) can load them
         // by name; particles get their own sibling folder.
-        const string AnimationsFolder = "Assets/Resources/" + UIAnimation.ResourcesFolder;
-        const string ParticlesFolder = "Assets/Resources/UIParticles";
-
-        const string LibraryAssetPath = "Assets/Resources/UIAnimationLibrary.asset";
+        // Everything lives under Assets/Resources/UISA so clips are loadable by name
+        // (UIAnimation.Play) and the project stays organized in one place.
+        const string RootFolder = "Assets/Resources/UISA";
+        const string AnimationsFolder = RootFolder + "/Animations";        // = Resources/UISA/Animations
+        const string ParticlesFolder = RootFolder + "/Particles";
+        const string ScenesFolder = RootFolder + "/uiSceneAnimation";
+        const string LibraryAssetPath = RootFolder + "/UIAnimationLibrary.asset";
 
         // The library asset (in Resources) that lets UIAnimation.Play find clips by
         // name at runtime without putting every clip into Resources.
@@ -2044,7 +2126,7 @@ namespace UIToolkit.Animation.Editor
             var lib = AssetDatabase.LoadAssetAtPath<UIAnimationLibrary>(LibraryAssetPath);
             if (lib == null)
             {
-                EnsureFolderPath("Assets/Resources");
+                EnsureFolderPath(RootFolder);
                 lib = CreateInstance<UIAnimationLibrary>();
                 AssetDatabase.CreateAsset(lib, LibraryAssetPath);
             }
@@ -2174,15 +2256,15 @@ namespace UIToolkit.Animation.Editor
             if (was) ReloadPreview();
         }
 
-        // Preview the ordered sequence live in the editor.
-        void PreviewSequence()
+        // Preview the ordered sequence live in the editor (optionally one section).
+        void PreviewSequence(string section = null)
         {
             if (_scene == null) { EditorUtility.DisplayDialog("Sequence", "Assign a scene asset first.", "OK"); return; }
             UILog.Enabled = _scene.debugLog;
             StopScenePreview();
             ReloadPreview();
             if (_clonedRoot == null) return;
-            _previewSequence = UISequenceRunner.Build(_scene, _clonedRoot);
+            _previewSequence = UISequenceRunner.Build(_scene, _clonedRoot, section);
             _scenePreviewing = true;
             _scenePrevLast = EditorApplication.timeSinceStartup;
             EditorApplication.update += ScenePreviewTick;
@@ -2217,7 +2299,9 @@ namespace UIToolkit.Animation.Editor
 
         void CreateSceneFlow()
         {
-            string path = EditorUtility.SaveFilePanelInProject("Create Scene Animation", "NewUIScene", "asset", "");
+            // Save into UISA/uiSceneAnimation (the dialog opens there by default).
+            string dir = EnsureFolderPath(ScenesFolder);
+            string path = EditorUtility.SaveFilePanelInProject("Create Scene Animation", "NewUIScene", "asset", "", dir);
             if (string.IsNullOrEmpty(path)) return;
             var s = CreateInstance<UISceneAnimation>();
             AssetDatabase.CreateAsset(s, path);

@@ -158,7 +158,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RenderShadows: 1
+  m_RenderShadows: 0
   m_RequiresDepthTextureOption: 2
   m_RequiresOpaqueTextureOption: 2
   m_CameraType: 0
@@ -199,8 +199,8 @@ Camera:
   m_GameObject: {fileID: 519420028}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 4
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -370,9 +370,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 800208073}
-  - component: {fileID: 800208072}
-  - component: {fileID: 800208074}
   - component: {fileID: 800208075}
+  - component: {fileID: 800208080}
+  - component: {fileID: 800208076}
+  - component: {fileID: 800208077}
+  - component: {fileID: 800208081}
+  - component: {fileID: 800208079}
+  - component: {fileID: 800208078}
   m_Layer: 5
   m_Name: UIDocument
   m_TagString: Untagged
@@ -380,29 +384,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &800208072
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 800208071}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
-  m_PanelSettings: {fileID: 11400000, guid: 50d2e32b20d80a44fa072e3742549996, type: 2}
-  m_ParentUI: {fileID: 0}
-  sourceAsset: {fileID: 9197481963319205126, guid: 9323713d85b644741ae8f441a48e5cdc, type: 3}
-  m_SortingOrder: 0
-  m_Position: 0
-  m_WorldSpaceSizeMode: 1
-  m_WorldSpaceWidth: 1920
-  m_WorldSpaceHeight: 1080
-  m_PivotReferenceSize: 0
-  m_Pivot: 0
-  m_WorldSpaceCollider: {fileID: 0}
 --- !u!4 &800208073
 Transform:
   m_ObjectHideFlags: 0
@@ -418,19 +399,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &800208074
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 800208071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7bea6bf215f01934c9ec3f04a8308924, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UIToolkit.Animation::UIToolkit.Animation.Timeline.UISceneDirector
-  scene: {fileID: 11400000, guid: b2a98406cad913f4aa7dc5e1271985ea, type: 2}
 --- !u!1931382934 &800208075
 PanelRenderer:
   m_ObjectHideFlags: 0
@@ -489,6 +457,109 @@ PanelRenderer:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_Position: 0
+--- !u!114 &800208076
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800208071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab1fc4523d4056c4f9cdb8101aab8780, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SafeAreaManager
+  collapseMargins: 1
+  forceOrientationCheck: 1
+  excludeLeft: 0
+  excludeRight: 0
+  excludeTop: 0
+  excludeBottom: 0
+  excludeTvos: 0
+  enableScaler: 1
+  scalerMode: 0
+  customProfiles:
+  - profileName: Current
+    maxDiagonalInches: 0
+    referenceResolution: {x: 1080, y: 1920}
+    matchMode: 0
+    useSmartMatch: 1
+    match: 0.5
+  manualReferenceResolution: {x: 1080, y: 1920}
+  manualMatchMode: 0
+  manualSmartMatch: 1
+  manualMatch: 0.5
+  autoSwapInLandscape: 1
+  extraScale: 1
+  showDebugOverlay: 0
+--- !u!114 &800208077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800208071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbfb46d36aee4f32ac0af9bf14485ec7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CustomButton
+--- !u!114 &800208078
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800208071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18c91eac9f1c9ab4a90516a2dac3695c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ManageUIButton
+  openSettingPanel: {fileID: 11400000, guid: ffb3a06eec7a1d9468a5cc298e1e1095, type: 2}
+  closeSettingPanel: {fileID: 11400000, guid: 4bc3568c9ae3847408e5f70f7649f004, type: 2}
+  openAdPanel: {fileID: 11400000, guid: 311b83b06854c744f9cc4b20d309e438, type: 2}
+  closeAdPanel: {fileID: 11400000, guid: 4eac48714bb87bd4fa79cd5d42f8ae1a, type: 2}
+--- !u!114 &800208079
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800208071}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad057d0f6e8642be8b176064740331f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ManageUISlider
+--- !u!114 &800208080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800208071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13a04d0ffebf44468a8e46664e4d5c89, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BaseReference
+  panelRenderer: {fileID: 800208075}
+  gameData: {fileID: 11400000, guid: 29a83afeab807b247b39ff5bba93f323, type: 2}
+  manageUISlider: {fileID: 800208079}
+  manageUIButton: {fileID: 800208078}
+--- !u!114 &800208081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800208071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bec0e19c4ed54817b9185e5689cf28d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BaseUIElementRefrence
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

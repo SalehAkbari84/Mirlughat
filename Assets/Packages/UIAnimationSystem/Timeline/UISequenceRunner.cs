@@ -11,11 +11,12 @@ namespace UIToolkit.Animation.Timeline
     public static class UISequenceRunner
     {
         // Build the sequence without registering it (used for editor preview).
-        public static Sequence Build(UISceneAnimation scene, VisualElement root)
+        // section: null/empty = all steps; otherwise only steps in that section.
+        public static Sequence Build(UISceneAnimation scene, VisualElement root, string section = null)
         {
             if (scene == null || root == null || scene.sequence == null) return null;
 
-            UILog.Log($"Sequence.Build: {scene.sequence.Count} step(s) under root '{root.name}'.");
+            UILog.Log($"Sequence.Build: {scene.sequence.Count} step(s), section='{(string.IsNullOrEmpty(section) ? "ALL" : section)}', root '{root.name}'.");
             var seq = new Sequence();
             float endSoFar = 0f;    // where a sequential ("after previous") step begins
             float prevStart = 0f;   // start time of the previous step (for parallel)
@@ -24,6 +25,7 @@ namespace UIToolkit.Animation.Timeline
             foreach (var step in scene.sequence)
             {
                 if (step == null || (step.clip == null && step.particle == null)) continue;
+                if (!string.IsNullOrEmpty(section) && step.section != section) continue;   // section filter
 
                 // "After previous" = sequential; "with previous" = parallel (same
                 // start as the previous step). delay offsets either case.
@@ -37,7 +39,7 @@ namespace UIToolkit.Animation.Timeline
                     VisualElement r = string.IsNullOrEmpty(step.rootElementName)
                         ? root : root.Q<VisualElement>(step.rootElementName) ?? root;
                     var player = new ClipPlayer(step.clip, r)
-                        .SetLoopOverride(step.loops != 1, step.loops, step.loopType);
+                        .SetLoopOverride(step.loops != 1, step.loops, step.loopType, step.repeatInterval);
                     seq.Insert(start, player);
                     endSoFar = Mathf.Max(endSoFar, start + player.TotalDuration);
                 }
@@ -69,9 +71,9 @@ namespace UIToolkit.Animation.Timeline
         }
 
         // Build, register with the manager, and start playing.
-        public static Sequence Play(UISceneAnimation scene, VisualElement root)
+        public static Sequence Play(UISceneAnimation scene, VisualElement root, string section = null)
         {
-            var seq = Build(scene, root);
+            var seq = Build(scene, root, section);
             if (seq != null) TweenManager.Register(seq);
             return seq;
         }

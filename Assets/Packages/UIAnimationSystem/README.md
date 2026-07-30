@@ -111,7 +111,7 @@ Toolbar (wrap-شونده): Scene | Reload | New | AutoFit | Zoom | Frame | Reset
 - **UXML Layout**، **Preview Size**، **Preview Background**، و **Additional Style Sheets** (افزودن/حذف).
 
 ### تب Animate — خط‌به‌خط
-1. **CLIP**: انتخاب کلیپ یا **New** (خودکار در `Assets/Resources/UIAnimations` ذخیره می‌شود).
+1. **CLIP**: انتخاب کلیپ یا **New** (خودکار در `Assets/Resources/UISA/Animations` ذخیره می‌شود).
 2. **Add to Play Order**: کلیپ فعال را به‌عنوان یک step به Play Order اضافه می‌کند (تنها جای زمان‌بندیِ پخش).
 3. **ELEMENT INSPECTOR** (وقتی المانِ نام‌دار انتخاب است): تِرَک‌های آن المان با **مقدار زنده** + دکمه‌ی **Key** (ثبت مقدار فعلی در playhead) + حذف tِرَک + **+ Property**.
 4. **Presets** (فولد): انتخاب از ۴۷ انیمیشن آماده + **Apply** (می‌سازد، ذخیره و به Play Order اضافه می‌کند).
@@ -141,15 +141,24 @@ Toolbar (wrap-شونده): Scene | Reload | New | AutoFit | Zoom | Frame | Reset
 
 ## ۵. Play Order
 
-**تنها لیستِ ترتیب‌دارِ پخشِ کلیپ‌ها.** هر مرحله (step):
-- **Clip**، **Repeat** (`1`=یک‌بار، `0`=بی‌نهایت، `N`=N بار)، **Repeat Type** (Restart/Yoyo/Incremental)، **Delay before**، **Play together with previous (parallel)** (روشن = هم‌زمان با مرحله‌ی قبلی اجرا می‌شود؛ خاموش = بعد از آن)، **Root element** (اختیاری).
-- مراحلِ موازی با تورفتگی و خطِ کناریِ آبی زیر مرحله‌ی قبل **گروه‌بندیِ بصری** می‌شوند و با نشانِ `+` مشخص‌اند. می‌توانی چند مرحله را پشت‌سرهم «together» کنی تا همه با هم اجرا شوند.
-- **پارتیکل هم در همین ترتیب پشتیبانی می‌شود**: هر step می‌تواند یک **Particle** (config + Host + Burst) داشته باشد که در زمانِ شروعِ همان step شلیک می‌شود — کنار کلیپ یا به‌تنهایی. دکمه‌های **+ Clip Step** و **+ Particle Step**. (`Burst = 0` یعنی پیوسته، `N>0` یعنی یک‌باره.)
-- دکمه‌های جابه‌جایی (^ ▾) و حذف.
+**لیستِ ترتیب‌دارِ پخشِ کلیپ‌ها، گروه‌بندی‌شده به Section (بخش).**
+
+**Section ها** — می‌توانی Play Order را به چند بخشِ نام‌دار و **مجزا** تقسیم کنی (مثلاً `Intro`، `Idle`، `Outro`). هر بخش هدرِ خودش را دارد:
+- **+ Add Section**: بخشِ جدید می‌سازد. هر بخش دکمه‌های **+ Clip** و **+ Particle** خودش را دارد.
+- نامِ بخش را در هدر می‌توانی تغییر بدهی (همه‌ی stepهای آن بخش با هم آپدیت می‌شوند).
+- **Preview** کنارِ نامِ بخش فقط همان بخش را پیش‌نمایش می‌دهد؛ **Preview All** همه را.
+- جابه‌جایی (^ v) فقط **داخلِ همان بخش** عمل می‌کند. هر step یک فیلدِ **Section** هم دارد تا بتوانی آن را به بخشِ دیگری منتقل کنی.
+- **`Auto-play section`** (بالای لیست): کدام بخش موقع شروع خودکار پخش شود. **خالی = همه‌ی بخش‌ها**. بقیه را از کد: `director.PlaySection("Outro")`.
+
+هر مرحله (step):
+- **Clip**، **Section**، **Repeat** (`1`=یک‌بار، `0`=بی‌نهایت، `N`=N بار)، **Repeat Type** (Restart/Yoyo/Incremental)، **Repeat every (s)** (فاصله‌ی زمانی بین تکرارها — مثلاً بی‌نهایت + ۵ ثانیه = هر ۵ ثانیه یک‌بار؛ `0`=پشت‌سرهم)، **Delay before**، **Play together with previous (parallel)**، **Root element** (اختیاری).
+- مراحلِ موازی با تورفتگی و خطِ کناریِ آبی زیر مرحله‌ی قبل **گروه‌بندیِ بصری** می‌شوند و با نشانِ `+` مشخص‌اند.
+- **پارتیکل هم در همین ترتیب پشتیبانی می‌شود**: هر step می‌تواند یک **Particle** (config + Host + Burst) داشته باشد که در زمانِ شروعِ همان step شلیک می‌شود. (`Burst = 0` یعنی پیوسته، `N>0` یعنی یک‌باره.)
+- دکمه‌های جابه‌جایی (^ v) و حذف.
 - **`Play sequence on start`**: اگر روشن باشد، موقع شروعِ صحنه خودکار اجرا می‌شود (پیش‌فرض روشن).
 
 نکات:
-- یک مرحله با **Repeat = 0 (بی‌نهایت) پایانی است**؛ مراحلِ بعد از آن خودکار **غیرفعال/خاکستری** می‌شوند (چون هرگز پخش نمی‌شوند).
+- یک مرحله با **Repeat = 0 (بی‌نهایت) پایانی است**؛ مراحلِ بعدیِ **همان بخش** خودکار **غیرفعال/خاکستری** می‌شوند (چون هرگز پخش نمی‌شوند). بخش‌های دیگر مستقل‌اند.
 - برای پخش on-demand (هر وقت خواستی از کد) از `UIAnimation.Play` استفاده کن (بخش ۷)، نه Play Order.
 
 ---
@@ -236,7 +245,16 @@ UIAnimation.Play("WinPanel", root);     // پخش هر وقت خواستی (on-d
 UIAnimation.Register("intro", clip);    // ثبت دستی
 UIAnimation.Get("name"); UIAnimation.Has("name"); UIAnimation.Unregister("name");
 ```
-کلیپ‌ها زیر `Resources/UIAnimations` و در `UIAnimationLibrary.asset` ثبت می‌شوند → با نام قابل اجرا.
+کلیپ‌ها زیر `Resources/UISA/Animations` و در `UISA/UIAnimationLibrary.asset` ثبت می‌شوند → با نام قابل اجرا.
+
+**ساختار پوشه‌ها** (همه زیر `Assets/Resources/UISA/`):
+```
+Assets/Resources/UISA/
+├─ Animations/         کلیپ‌های انیمیشن
+├─ Particles/          پریست‌های پارتیکل
+├─ uiSceneAnimation/   اساُت‌های UISceneAnimation
+└─ UIAnimationLibrary.asset
+```
 
 ### ۷.۶ تایم‌لاین صحنه با کد (`UITimeline`)
 ```csharp
@@ -280,10 +298,14 @@ button.BurstPreset(ParticlePresets.Kind.Confetti, 80);
 ```
 
 ### ۷.۱۱ اجرا با دایرکتور
+`UISceneDirector` یک **لیست از UISceneAnimation** می‌گیرد (می‌توانی چند صحنه به آن بدهی)؛ موقع شروع همه را پخش می‌کند.
 ```csharp
 var dir = GetComponent<UISceneDirector>();
-dir.PlaySequence();              // پخش Play Order
-dir.PlayParticles("id");         // پخش یک پارتیکلِ bindشده
+dir.scenes.Add(mySceneAsset);    // چند صحنه قابل افزودن است
+dir.PlaySequence();              // پخش Play Order همه‌ی صحنه‌ها
+dir.PlaySequence(mySceneAsset);  // فقط یک صحنه‌ی خاص
+dir.PlaySection("Outro");        // فقط یک بخشِ (section) خاص
+dir.PlayParticles("id");         // جستجوی پارتیکل در همه‌ی صحنه‌ها
 ```
 
 ---
@@ -368,7 +390,7 @@ var cfg  = ParticlePresets.Create(ParticlePresets.Kind.Confetti);
 - **اجرا نمی‌شود / المان پیدا نمی‌شود**: المان باید در UXML نام داشته باشد و نامِ track کلیپ با آن یکی باشد. Validation را چک کن.
 - **`Setup & Play` کاری نمی‌کند**: باید یک host پنل با PanelSettings در صحنه باشد که UXML را نمایش دهد — **Panel Renderer** در Unity 6.5+ یا **UIDocument** در نسخه‌های قدیمی‌تر. سیستم خودکار هرکدام موجود باشد را پیدا می‌کند.
 - **مقادیر در فریم اول صفر**: `resolvedStyle` تا بعد از اولین layout آماده نیست؛ یا `From()` بده یا یک فریم صبر کن. دایرکتورها خودکار صبر می‌کنند.
-- **`UIAnimation.Play` پیدا نمی‌کند**: کلیپ باید زیر `Resources/UIAnimations`/library باشد یا با `Register` ثبت شود؛ نام تکراری نداشته باش.
+- **`UIAnimation.Play` پیدا نمی‌کند**: کلیپ باید زیر `Resources/UISA/Animations`/library باشد یا با `Register` ثبت شود؛ نام تکراری نداشته باش.
 - **پارتیکل دیده نمی‌شود**: host باید اندازه داشته باشد؛ برای تعداد زیاد `meshRenderer` را روشن کن.
 - **کلیک‌های پشت‌سرهم انیمیشن را spam می‌کنند**: در trigger گزینه‌ی **Ignore while playing** را روشن نگه‌دار یا **Cooldown** بگذار.
 

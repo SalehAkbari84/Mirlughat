@@ -17,7 +17,7 @@ namespace UIToolkit.Animation.Timeline
     public static class UIAnimation
     {
         // Resources sub-path used as a fallback location for individual clips.
-        public const string ResourcesFolder = "UIAnimations";
+        public const string ResourcesFolder = "UISA/Animations";
 
         static readonly Dictionary<string, UIAnimationClip> _registry = new Dictionary<string, UIAnimationClip>();
         static bool _librariesLoaded;

@@ -56,6 +56,9 @@ namespace UIToolkit.Animation.Timeline
         [Tooltip("Play the sequence automatically when the scene director enables.")]
         public bool playSequenceOnStart = true;
 
+        [Tooltip("Which Play Order section auto-plays on start. Empty = all sections.")]
+        public string startSection = "";
+
         [Tooltip("Trace the runtime playback to the Console (Setup > Debug > Log).")]
         public bool debugLog = false;
 
@@ -63,11 +66,14 @@ namespace UIToolkit.Animation.Timeline
         public class SequenceStep
         {
             public string id = "step";
+            public string section = "Main";           // group this step belongs to
             public UIAnimationClip clip;              // optional: clip to play
             public string rootElementName = "";       // empty = document root
             [Min(0f)] public float delay = 0f;        // wait before this step
             public int loops = 1;                     // 1 = once, 0 = repeat forever, N = N times
             public LoopType loopType = LoopType.Restart;
+            [Min(0f)] [Tooltip("Seconds to wait between repeats (e.g. play every N seconds). 0 = back-to-back.")]
+            public float repeatInterval = 0f;
             [Tooltip("On = start after the previous step finishes. Off = play together with the previous step.")]
             public bool waitForPrevious = true;
 

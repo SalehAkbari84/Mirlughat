@@ -25,6 +25,12 @@ namespace UIToolkit.Animation.Timeline
         bool _loopOv;
         int _loopsOv;
         LoopType _loopTypeOv;
+        float _loopIntervalOv;     // seconds to wait between repeats (0 = none)
+
+        // wait-between-repeats state
+        bool _waiting;
+        float _wait;
+        LoopType _waitLoopType;
 
         readonly Dictionary<PropertyTrack, float> _baseFloat = new Dictionary<PropertyTrack, float>();
 
@@ -47,15 +53,18 @@ namespace UIToolkit.Animation.Timeline
                 bool loop = _hasLoopOverride ? _loopOv : _clip.loop;
                 int loops = _hasLoopOverride ? _loopsOv : _clip.loops;
                 int count = (loop && loops > 0) ? loops : 1;
-                return once * count;
+                float interval = _hasLoopOverride ? _loopIntervalOv : 0f;
+                return once * count + interval * Mathf.Max(0, count - 1);
             }
         }
 
         // Override the clip's loop settings for this instance only (non-destructive).
         // loops: 1 = play once, 0 (or less) = repeat forever, N = repeat N times.
-        public ClipPlayer SetLoopOverride(bool loop, int loops, LoopType type)
+        // interval: seconds to wait between repeats (0 = back-to-back).
+        public ClipPlayer SetLoopOverride(bool loop, int loops, LoopType type, float interval = 0f)
         {
             _hasLoopOverride = true; _loopOv = loop; _loopsOv = loops; _loopTypeOv = type;
+            _loopIntervalOv = Mathf.Max(0f, interval);
             return this;
         }
 
@@ -169,6 +178,17 @@ namespace UIToolkit.Animation.Timeline
             float dur = _clip.Duration;
             if (dur <= 0f) { Sample(0f); State = TweenState.Completed; _onComplete?.Invoke(); return true; }
 
+            // waiting between repeats (the interval) - hold the pose, count down
+            if (_waiting)
+            {
+                _wait -= deltaTime;
+                if (_wait > 0f) return false;
+                _waiting = false;
+                _elapsed = 0f;
+                _lastEventT = -1f;
+                if (_waitLoopType == LoopType.Yoyo) _isForward = !_isForward;
+            }
+
             bool hasEvents = OnEvent != null && _clip.events != null && _clip.events.Count > 0;
 
             _elapsed += deltaTime * _clip.playbackSpeed;
@@ -193,6 +213,15 @@ namespace UIToolkit.Animation.Timeline
                     State = TweenState.Completed;
                     _onComplete?.Invoke();
                     return true;
+                }
+
+                float interval = _hasLoopOverride ? _loopIntervalOv : 0f;
+                if (interval > 0f)
+                {
+                    // hold the finished pose, then wait before the next repeat
+                    Sample(_isForward ? dur : 0f);
+                    _waiting = true; _wait = interval; _waitLoopType = lt;
+                    return false;
                 }
 
                 _elapsed -= dur;            // carry overshoot instead of resetting to 0
