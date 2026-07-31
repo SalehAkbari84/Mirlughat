@@ -17,6 +17,8 @@ MonoBehaviour:
     expanded: 1
     properties:
     - property: 26
+      keys: []
+    - property: 0
       keys:
       - time: 0
         floatValue: 1
@@ -76,7 +78,7 @@ MonoBehaviour:
           m_PreInfinity: 2
           m_PostInfinity: 2
           m_RotationOrder: 4
-    - property: 0
+    - property: 25
       keys:
       - time: 0
         floatValue: 1

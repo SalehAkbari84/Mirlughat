@@ -370,6 +370,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 800208073}
+  - component: {fileID: 800208084}
   - component: {fileID: 800208075}
   - component: {fileID: 800208080}
   - component: {fileID: 800208076}
@@ -377,6 +378,8 @@ GameObject:
   - component: {fileID: 800208081}
   - component: {fileID: 800208079}
   - component: {fileID: 800208078}
+  - component: {fileID: 800208082}
+  - component: {fileID: 800208083}
   m_Layer: 5
   m_Name: UIDocument
   m_TagString: Untagged
@@ -520,6 +523,8 @@ MonoBehaviour:
   closeSettingPanel: {fileID: 11400000, guid: 4bc3568c9ae3847408e5f70f7649f004, type: 2}
   openAdPanel: {fileID: 11400000, guid: 311b83b06854c744f9cc4b20d309e438, type: 2}
   closeAdPanel: {fileID: 11400000, guid: 4eac48714bb87bd4fa79cd5d42f8ae1a, type: 2}
+  openStorePanel: {fileID: 11400000, guid: bbad35d1e72bd4340bc046971cdd9e96, type: 2}
+  closeStorePanel: {fileID: 11400000, guid: cdec0dcae09285843ad27070547ed8ab, type: 2}
 --- !u!114 &800208079
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -560,6 +565,45 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bec0e19c4ed54817b9185e5689cf28d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BaseUIElementRefrence
+--- !u!114 &800208082
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800208071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f8bfa3d1c3708645866c24556746865, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIAnimationOptimizer
+--- !u!114 &800208083
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800208071}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50990fc48a5203644ba8cac9a1b56085, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIPerformanceProfiler
+  logEveryNFrames: 60
+  gcWarnThresholdKB: 100
+  frameWarnThresholdMs: 20
+--- !u!114 &800208084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800208071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: feae8d09d7504a168047244e4c9b03ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetFrameRate
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

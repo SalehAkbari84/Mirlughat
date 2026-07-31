@@ -47,7 +47,7 @@ MonoBehaviour:
           m_PreInfinity: 2
           m_PostInfinity: 2
           m_RotationOrder: 4
-      - time: 0.1
+      - time: 0.2
         floatValue: 0
         colorValue: {r: 1, g: 1, b: 1, a: 1}
         ease: 5
@@ -77,6 +77,8 @@ MonoBehaviour:
           m_PostInfinity: 2
           m_RotationOrder: 4
     - property: 26
+      keys: []
+    - property: 25
       keys:
       - time: 0
         floatValue: 1
@@ -107,7 +109,7 @@ MonoBehaviour:
           m_PreInfinity: 2
           m_PostInfinity: 2
           m_RotationOrder: 4
-      - time: 0.20000002
+      - time: 0.2
         floatValue: 0
         colorValue: {r: 1, g: 1, b: 1, a: 1}
         ease: 5

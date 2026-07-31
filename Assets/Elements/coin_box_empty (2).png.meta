@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: b6fe3e8f03e67e94cad8d1bf51a43e30
+guid: aacae71a7708f0745975885cfa0e5f53
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6981379554344553156
-    second: shop_price_0
+      213: -216650798119768841
+    second: coin_box_empty (2)_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,23 +126,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: shop_price_0
+      name: coin_box_empty (2)_0
       rect:
         serializedVersion: 2
-        x: 10
-        y: 13
-        width: 430
-        height: 91
+        x: 56
+        y: 34
+        width: 1258
+        height: 396
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 215, y: 45, z: 215, w: 46}
+      border: {x: 200, y: 196, z: 200, w: 200}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4cac1ea37b7d2e060800000000000000
-      internalID: 6981379554344553156
+      spriteID: 7fc24c93f3d4efcf0800000000000000
+      internalID: -216650798119768841
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 0b1124e2a55d5b64ca5a4c54f8f3f897
+    spriteID: 52fa84025a107c141acc6722b052a09d
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      shop_price_0: 6981379554344553156
+      coin_box_empty (2)_0: -216650798119768841
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
