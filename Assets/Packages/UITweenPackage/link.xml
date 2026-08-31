@@ -1,0 +1,11 @@
+<linker>
+  <!--
+    این فایل از حذف‌شدنِ ناخواسته‌ی کلاس‌های پکیج UITween توسط سیستم Code Stripping
+    (مخصوصاً در بیلدهای IL2CPP اندروید/iOS با Managed Stripping Level روی High) جلوگیری می‌کند.
+    چون بعضی از کلاس‌های این پکیج (مثل UITweenManager) فقط در زمان اجرا و به‌صورت پویا
+    ساخته می‌شوند، ممکن است آنالیزِ استاتیکِ Unity تشخیص ندهد که استفاده می‌شوند و حذفشان کند.
+    قرار دادن همین یک فایل در هر جای پوشه‌ی Assets کافی است.
+  -->
+  <assembly fullname="UITween" preserve="all" />
+  <assembly fullname="UITween.TMP" preserve="all" />
+</linker>

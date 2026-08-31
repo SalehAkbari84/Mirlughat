@@ -1,0 +1,17 @@
+{
+    "name": "UITween.TMP",
+    "rootNamespace": "UITween",
+    "references": [
+        "UITween",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
