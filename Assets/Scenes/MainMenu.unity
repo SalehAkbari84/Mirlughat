@@ -150,11 +150,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 10
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 0
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 0
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!114 &24285182
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -216,6 +224,182 @@ RectTransform:
   m_AnchoredPosition: {x: 142.72, y: -639.815}
   m_SizeDelta: {x: 240, y: 340}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &25913350
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 25913351}
+  - component: {fileID: 25913356}
+  - component: {fileID: 25913355}
+  - component: {fileID: 25913354}
+  - component: {fileID: 25913353}
+  - component: {fileID: 25913352}
+  m_Layer: 5
+  m_Name: close-spinner-panel-btn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &25913351
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 25913350}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 0}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 804393694}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 0}
+  m_AnchoredPosition: {x: 0, y: 20}
+  m_SizeDelta: {x: 385, y: 105}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &25913352
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 25913350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
+  showStyle: 10
+  showDuration: 0.3
+  showEase: 23
+  hideStyle: 10
+  hideDuration: 0.25
+  hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
+--- !u!114 &25913353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 25913350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.EventSystems.EventTrigger
+  m_Delegates:
+  - eventID: 4
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1820524554}
+          m_TargetAssemblyTypeName: AnimatedPanelController, Assembly-CSharp
+          m_MethodName: Toggle
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+--- !u!114 &25913354
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 25913350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 25913355}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &25913355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 25913350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: -9052307503555579193, guid: 0279fcdd6af06a347a7410d60eb5b600, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &25913356
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 25913350}
+  m_CullTransparentMesh: 1
 --- !u!1 &28146566
 GameObject:
   m_ObjectHideFlags: 0
@@ -690,11 +874,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 10
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 10
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 10
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!1 &58437498
 GameObject:
   m_ObjectHideFlags: 0
@@ -957,11 +1149,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 10
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 0
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 0
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!114 &97337774
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1483,6 +1683,81 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 170368296}
   m_CullTransparentMesh: 1
+--- !u!1 &170608500
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 170608501}
+  - component: {fileID: 170608503}
+  - component: {fileID: 170608502}
+  m_Layer: 5
+  m_Name: play-icon
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &170608501
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 170608500}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1279159818}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 3.36, y: 0}
+  m_SizeDelta: {x: 53.08, y: 53.08}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &170608502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 170608500}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 5177878197449510788, guid: 534ed5dd31f88864cacd0f8411edbbaa, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &170608503
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 170608500}
+  m_CullTransparentMesh: 1
 --- !u!1 &176491724
 GameObject:
   m_ObjectHideFlags: 0
@@ -1595,6 +1870,7 @@ RectTransform:
   - {fileID: 1908171285}
   - {fileID: 894614872}
   - {fileID: 282969444}
+  - {fileID: 1104770403}
   m_Father: {fileID: 1097874016}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1634,11 +1910,11 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1167328692}
+  - {fileID: 584869348}
   - {fileID: 2066517486}
   - {fileID: 462428113}
-  - {fileID: 1156875547}
-  - {fileID: 584869348}
   - {fileID: 464794862}
+  - {fileID: 1156875547}
   m_Father: {fileID: 282969444}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -1658,11 +1934,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 2
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 2
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 3
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!114 &199785820
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1960,7 +2244,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &282969444
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1993,11 +2277,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 0
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 0
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 0
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!114 &282969446
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2217,11 +2509,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 2
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 2
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 3
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!1 &318629580
 GameObject:
   m_ObjectHideFlags: 0
@@ -2829,6 +3129,107 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 362396575}
   m_CullTransparentMesh: 1
+--- !u!1 &379365969
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 379365970}
+  - component: {fileID: 379365973}
+  - component: {fileID: 379365972}
+  - component: {fileID: 379365971}
+  m_Layer: 5
+  m_Name: spinner-title
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &379365970
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 379365969}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 804393694}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 478, y: 200}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &379365971
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 379365969}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
+  showStyle: 10
+  showDuration: 0.3
+  showEase: 23
+  hideStyle: 10
+  hideDuration: 0.25
+  hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
+--- !u!114 &379365972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 379365969}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: -8066233785310368231, guid: ec5c212d60319254dbfb416d624d36b5, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &379365973
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 379365969}
+  m_CullTransparentMesh: 1
 --- !u!1 &380657010
 GameObject:
   m_ObjectHideFlags: 0
@@ -3015,11 +3416,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 10
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 0
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 0
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!114 &406751222
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3307,11 +3716,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 10
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 0
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 0
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!1 &439003106
 GameObject:
   m_ObjectHideFlags: 0
@@ -3612,6 +4029,7 @@ GameObject:
   - component: {fileID: 462428113}
   - component: {fileID: 462428115}
   - component: {fileID: 462428114}
+  - component: {fileID: 462428116}
   m_Layer: 5
   m_Name: coin-background
   m_TagString: Untagged
@@ -3678,6 +4096,31 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 462428112}
   m_CullTransparentMesh: 1
+--- !u!114 &462428116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 462428112}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
+  showStyle: 10
+  showDuration: 0.3
+  showEase: 23
+  hideStyle: 10
+  hideDuration: 0.25
+  hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!1 &464794861
 GameObject:
   m_ObjectHideFlags: 0
@@ -3690,8 +4133,9 @@ GameObject:
   - component: {fileID: 464794865}
   - component: {fileID: 464794864}
   - component: {fileID: 464794863}
+  - component: {fileID: 464794866}
   m_Layer: 5
-  m_Name: Button
+  m_Name: watch-ad
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3797,6 +4241,106 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 464794861}
+  m_CullTransparentMesh: 1
+--- !u!114 &464794866
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 464794861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
+  showStyle: 10
+  showDuration: 0.3
+  showEase: 23
+  hideStyle: 10
+  hideDuration: 0.25
+  hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
+--- !u!1 &479289892
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 479289893}
+  - component: {fileID: 479289895}
+  - component: {fileID: 479289894}
+  m_Layer: 5
+  m_Name: spinner-border
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &479289893
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 479289892}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1056573431}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 699.94, y: 717.93}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &479289894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 479289892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 3730876545573564709, guid: 891c2a00813f43442beba6c52c1f86ad, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &479289895
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 479289892}
   m_CullTransparentMesh: 1
 --- !u!1 &496136462
 GameObject:
@@ -4129,8 +4673,9 @@ GameObject:
   - component: {fileID: 584869351}
   - component: {fileID: 584869350}
   - component: {fileID: 584869349}
+  - component: {fileID: 584869352}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4274,6 +4819,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 584869347}
   m_CullTransparentMesh: 1
+--- !u!114 &584869352
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 584869347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 884e3865e16a15b49938a1e3b38b38c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PersianUGUI.PersianAnimatedText
+  style: 1
+  duration: 1
+  hideDuration: 0.25
+  playOnStart: 0
 --- !u!1 &603559185
 GameObject:
   m_ObjectHideFlags: 0
@@ -4324,11 +4885,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 10
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 10
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 10
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!114 &603559188
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4521,11 +5090,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 10
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 10
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 10
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!1 &687204593
 GameObject:
   m_ObjectHideFlags: 0
@@ -5258,6 +5835,110 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!1 &804393693
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 804393694}
+  - component: {fileID: 804393697}
+  - component: {fileID: 804393696}
+  - component: {fileID: 804393695}
+  m_Layer: 5
+  m_Name: spinner-panel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &804393694
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 804393693}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 379365970}
+  - {fileID: 25913351}
+  - {fileID: 1056573431}
+  m_Father: {fileID: 1104770403}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 957.56006, y: 1093.53}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &804393695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 804393693}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
+  showStyle: 2
+  showDuration: 0.3
+  showEase: 23
+  hideStyle: 3
+  hideDuration: 0.25
+  hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
+--- !u!114 &804393696
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 804393693}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 8741539453135166685, guid: 00239e49880a4484abf17792b997d1f2, type: 3}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 0.5
+--- !u!222 &804393697
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 804393693}
+  m_CullTransparentMesh: 1
 --- !u!1 &873453293
 GameObject:
   m_ObjectHideFlags: 0
@@ -5405,11 +6086,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 0
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 0
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 0
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!114 &894614874
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5479,6 +6168,7 @@ Transform:
   m_Children:
   - {fileID: 2032055626}
   - {fileID: 1269744916}
+  - {fileID: 1820524555}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &923213996
@@ -5569,6 +6259,7 @@ GameObject:
   - component: {fileID: 1028209959}
   - component: {fileID: 1028209958}
   - component: {fileID: 1028209957}
+  - component: {fileID: 1028209960}
   m_Layer: 5
   m_Name: ad-btn
   m_TagString: Untagged
@@ -5678,6 +6369,35 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1028209955}
   m_CullTransparentMesh: 1
+--- !u!114 &1028209960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1028209955}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.EventSystems.EventTrigger
+  m_Delegates:
+  - eventID: 4
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1820524554}
+          m_TargetAssemblyTypeName: AnimatedPanelController, Assembly-CSharp
+          m_MethodName: Toggle
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &1050006986
 GameObject:
   m_ObjectHideFlags: 0
@@ -5909,6 +6629,44 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1051065194}
   m_CullTransparentMesh: 1
+--- !u!1 &1056573430
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1056573431}
+  m_Layer: 5
+  m_Name: spinner-layout
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1056573431
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1056573430}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1849355683}
+  - {fileID: 479289893}
+  - {fileID: 1279159818}
+  m_Father: {fileID: 804393694}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1063290252
 GameObject:
   m_ObjectHideFlags: 0
@@ -6259,6 +7017,108 @@ MonoBehaviour:
   _autoFixHierarchy: 1
   _runDiagnostics: 1
   _verboseLogging: 0
+--- !u!1 &1104770402
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1104770403}
+  - component: {fileID: 1104770406}
+  - component: {fileID: 1104770405}
+  - component: {fileID: 1104770404}
+  m_Layer: 5
+  m_Name: spinner-background
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &1104770403
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1104770402}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 804393694}
+  m_Father: {fileID: 184696173}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1104770404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1104770402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
+  showStyle: 0
+  showDuration: 0.3
+  showEase: 23
+  hideStyle: 0
+  hideDuration: 0.25
+  hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
+--- !u!114 &1104770405
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1104770402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.49803922}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1104770406
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1104770402}
+  m_CullTransparentMesh: 1
 --- !u!1 &1152643355
 GameObject:
   m_ObjectHideFlags: 0
@@ -6386,11 +7246,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 10
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 10
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 10
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!114 &1156875549
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6408,7 +7276,7 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 1269744917}
+        - m_Target: {fileID: 1820524554}
           m_TargetAssemblyTypeName: AnimatedPanelController, Assembly-CSharp
           m_MethodName: Toggle
           m_Mode: 1
@@ -6818,11 +7686,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 10
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 10
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 10
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!114 &1167328694
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7031,11 +7907,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 10
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 10
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 10
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!1 &1204760236
 GameObject:
   m_ObjectHideFlags: 0
@@ -7146,11 +8030,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 0
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 0
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 0
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!1 &1252210428
 GameObject:
   m_ObjectHideFlags: 0
@@ -7182,11 +8074,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 10
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 0
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 0
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!114 &1252210430
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7447,14 +8347,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 670375c93d6541541a244459ade2dade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AnimatedPanelController
-  backgroundElement: {fileID: 894614873}
-  panelElement: {fileID: 1796881271}
+  backgroundElement: {fileID: 894614871}
+  panelElement: {fileID: 1796881269}
   innerElements:
-  - {fileID: 603559187}
-  - {fileID: 1235635541}
-  - {fileID: 1726405902}
+  - {fileID: 603559185}
+  - {fileID: 1235635538}
+  - {fileID: 1726405900}
   staggerStep: 0.07
   exitOverlap: 0.25
+  audioSource: {fileID: 0}
+  openSound: {fileID: 0}
+  closeSound: {fileID: 0}
+  openParticles: []
+  closeParticles: []
 --- !u!1 &1271162317
 GameObject:
   m_ObjectHideFlags: 0
@@ -7529,6 +8434,127 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1271162317}
+  m_CullTransparentMesh: 1
+--- !u!1 &1279159817
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1279159818}
+  - component: {fileID: 1279159821}
+  - component: {fileID: 1279159820}
+  - component: {fileID: 1279159819}
+  m_Layer: 5
+  m_Name: start-spinner-btn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1279159818
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1279159817}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 170608501}
+  m_Father: {fileID: 1056573431}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 124.26, y: 129.31}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1279159819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1279159817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 1279159820}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &1279159820
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1279159817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: -2460765340942464943, guid: b284397f7676a0344875facc92dbbae4, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1279159821
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1279159817}
   m_CullTransparentMesh: 1
 --- !u!1 &1293621256
 GameObject:
@@ -8156,11 +9182,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 10
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 10
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 10
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!1 &1469871087
 GameObject:
   m_ObjectHideFlags: 0
@@ -8366,11 +9400,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 10
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 0
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 0
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!114 &1486780375
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8595,11 +9637,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 10
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 10
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 10
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!1 &1499487814
 GameObject:
   m_ObjectHideFlags: 0
@@ -10069,11 +11119,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 10
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 10
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 10
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!114 &1726405903
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10238,11 +11296,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 2
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 2
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 3
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!114 &1796881272
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10280,6 +11346,141 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1796881269}
+  m_CullTransparentMesh: 1
+--- !u!1 &1820524553
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1820524555}
+  - component: {fileID: 1820524554}
+  m_Layer: 0
+  m_Name: Ad Panel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1820524554
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1820524553}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 670375c93d6541541a244459ade2dade, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimatedPanelController
+  backgroundElement: {fileID: 282969443}
+  panelElement: {fileID: 199785817}
+  innerElements:
+  - {fileID: 1167328691}
+  - {fileID: 584869347}
+  - {fileID: 2066517485}
+  - {fileID: 462428112}
+  - {fileID: 464794861}
+  - {fileID: 1156875546}
+  staggerStep: 0.07
+  exitOverlap: 0.25
+  audioSource: {fileID: 0}
+  openSound: {fileID: 0}
+  closeSound: {fileID: 0}
+  openParticles: []
+  closeParticles: []
+--- !u!4 &1820524555
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1820524553}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 912768467}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1849355682
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1849355683}
+  - component: {fileID: 1849355685}
+  - component: {fileID: 1849355684}
+  m_Layer: 5
+  m_Name: spinner-background
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1849355683
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1849355682}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1056573431}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 599.11, y: 614.59}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1849355684
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1849355682}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: -985291046612167926, guid: 6e978f9afa2a89f41ab07661fe7c20c3, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1849355685
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1849355682}
   m_CullTransparentMesh: 1
 --- !u!1 &1908171284
 GameObject:
@@ -10370,11 +11571,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 0
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 0
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 0
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!1 &1910235930
 GameObject:
   m_ObjectHideFlags: 0
@@ -11594,17 +12803,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 670375c93d6541541a244459ade2dade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AnimatedPanelController
-  backgroundElement: {fileID: 1908171289}
-  panelElement: {fileID: 317062197}
+  backgroundElement: {fileID: 1908171284}
+  panelElement: {fileID: 317062193}
   innerElements:
-  - {fileID: 39039989}
-  - {fileID: 2088322954}
-  - {fileID: 1173968951}
-  - {fileID: 1421632183}
-  - {fileID: 676430252}
-  - {fileID: 1489966028}
+  - {fileID: 39039985}
+  - {fileID: 2088322952}
+  - {fileID: 1173968949}
+  - {fileID: 1421632181}
+  - {fileID: 676430250}
+  - {fileID: 1489966022}
   staggerStep: 0.07
   exitOverlap: 0.25
+  audioSource: {fileID: 0}
+  openSound: {fileID: 0}
+  closeSound: {fileID: 0}
+  openParticles: []
+  closeParticles: []
 --- !u!1 &2066517485
 GameObject:
   m_ObjectHideFlags: 0
@@ -11616,6 +12830,7 @@ GameObject:
   - component: {fileID: 2066517486}
   - component: {fileID: 2066517488}
   - component: {fileID: 2066517487}
+  - component: {fileID: 2066517489}
   m_Layer: 5
   m_Name: character
   m_TagString: Untagged
@@ -11680,6 +12895,31 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2066517485}
   m_CullTransparentMesh: 1
+--- !u!114 &2066517489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2066517485}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
+  showStyle: 2
+  showDuration: 0.3
+  showEase: 23
+  hideStyle: 2
+  hideDuration: 0.25
+  hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!1 &2088322952
 GameObject:
   m_ObjectHideFlags: 0
@@ -11729,11 +12969,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f530306d50a0525418ec363c4f2e2b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIAnimatedElement
-  style: 10
-  duration: 0.3
-  slideDistance: 300
+  showStyle: 10
+  showDuration: 0.3
   showEase: 23
+  hideStyle: 10
+  hideDuration: 0.25
   hideEase: 7
+  slideDistance: 300
+  showParticles: []
+  hideParticles: []
+  particleSpawnPoint: {fileID: 0}
+  audioSource: {fileID: 0}
+  showSound: {fileID: 0}
+  hideSound: {fileID: 0}
 --- !u!1 &2116535929
 GameObject:
   m_ObjectHideFlags: 0
