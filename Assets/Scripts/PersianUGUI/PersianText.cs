@@ -55,6 +55,31 @@ namespace PersianUGUI
         [Tooltip("جداکننده‌ی هزارگان برای فرمت خودکار")]
         [SerializeField] private char thousandsSeparator = ',';
 
+        [Header("کوتاه‌سازی اعداد بزرگ")]
+        [Tooltip("اعداد بزرگ به سبک بازی‌ها کوتاه بشن، مثلاً 1000000 -> \"1 میلیون\". اگه فعال باشه و عدد از آستانه بیشتر باشه، اولویت داره و جای «فرمت خودکار مبلغ» رو می‌گیره.")]
+        [SerializeField] private bool abbreviateNumbers = false;
+
+        [Tooltip("حداقل مقداری که از اون به بعد کوتاه‌سازی اعمال می‌شه")]
+        [SerializeField] private long abbreviateThreshold = 1000;
+
+        [Tooltip("تعداد رقم اعشار در عدد کوتاه‌شده (مثلاً 1 یعنی \"1.5\"). صفرهای اضافی خودکار حذف می‌شن.")]
+        [SerializeField] private int abbreviationDecimals = 1;
+
+        [Tooltip("جداکننده‌ی اعشار در عدد کوتاه‌شده")]
+        [SerializeField] private char abbreviationDecimalSeparator = '.';
+
+        [Tooltip("برچسب واحد برای هزار")]
+        [SerializeField] private string thousandUnit = "هزار";
+
+        [Tooltip("برچسب واحد برای میلیون")]
+        [SerializeField] private string millionUnit = "میلیون";
+
+        [Tooltip("برچسب واحد برای میلیارد")]
+        [SerializeField] private string billionUnit = "میلیارد";
+
+        [Tooltip("برچسب واحد برای تریلیون")]
+        [SerializeField] private string trillionUnit = "تریلیون";
+
         private TMP_Text _tmp;
 
         public string SourceText
@@ -73,6 +98,12 @@ namespace PersianUGUI
         {
             get => autoFormatNumbers;
             set { autoFormatNumbers = value; Apply(); }
+        }
+
+        public bool AbbreviateNumbers
+        {
+            get => abbreviateNumbers;
+            set { abbreviateNumbers = value; Apply(); }
         }
 
         private void Awake()
@@ -142,7 +173,15 @@ namespace PersianUGUI
         {
             ConvertDigitsToPersian = convertDigitsToPersian,
             AutoFormatNumbers = autoFormatNumbers,
-            ThousandsSeparator = thousandsSeparator
+            ThousandsSeparator = thousandsSeparator,
+            AbbreviateNumbers = abbreviateNumbers,
+            AbbreviateThreshold = abbreviateThreshold,
+            AbbreviationDecimals = abbreviationDecimals,
+            AbbreviationDecimalSeparator = abbreviationDecimalSeparator,
+            ThousandUnit = thousandUnit,
+            MillionUnit = millionUnit,
+            BillionUnit = billionUnit,
+            TrillionUnit = trillionUnit
         };
 
         /// <summary>

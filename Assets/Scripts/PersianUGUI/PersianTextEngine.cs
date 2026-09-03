@@ -41,11 +41,48 @@ namespace PersianUGUI
             /// <summary>کاراکتر جداکننده‌ی هزارگان برای فرمت خودکار (پیش‌فرض کاما لاتین)</summary>
             public char ThousandsSeparator;
 
+            /// <summary>
+            /// کوتاه‌سازیِ اعدادِ بزرگ به سبکِ بازی‌ها: به‌جای «1,000,000» می‌نویسه
+            /// «1 میلیون». وقتی روشن باشه و مقدارِ عدد از AbbreviateThreshold
+            /// بیشتر باشه، خودکار جایگزینِ AutoFormatNumbers می‌شه (اولویت با
+            /// کوتاه‌سازیه). اعدادِ کوچیک‌تر از آستانه دست‌نخورده می‌مونن.
+            /// </summary>
+            public bool AbbreviateNumbers;
+
+            /// <summary>حداقل مقداری که از اون به بعد کوتاه‌سازی اعمال می‌شه (پیش‌فرض 1000)</summary>
+            public long AbbreviateThreshold;
+
+            /// <summary>تعداد رقم اعشار در عددِ کوتاه‌شده (پیش‌فرض 1، یعنی مثلاً «1.5»). صفرهای اضافی خودکار حذف می‌شن.</summary>
+            public int AbbreviationDecimals;
+
+            /// <summary>جداکننده‌ی اعشار در عددِ کوتاه‌شده (پیش‌فرض نقطه‌ی لاتین)</summary>
+            public char AbbreviationDecimalSeparator;
+
+            /// <summary>برچسبِ واحد برای هزار (پیش‌فرض «هزار»؛ می‌تونی بذاری "K")</summary>
+            public string ThousandUnit;
+
+            /// <summary>برچسبِ واحد برای میلیون (پیش‌فرض «میلیون»؛ می‌تونی بذاری "M")</summary>
+            public string MillionUnit;
+
+            /// <summary>برچسبِ واحد برای میلیارد (پیش‌فرض «میلیارد»؛ می‌تونی بذاری "B")</summary>
+            public string BillionUnit;
+
+            /// <summary>برچسبِ واحد برای تریلیون (پیش‌فرض «تریلیون»؛ می‌تونی بذاری "T")</summary>
+            public string TrillionUnit;
+
             public static Options Default => new Options
             {
                 ConvertDigitsToPersian = false,
                 AutoFormatNumbers = false,
-                ThousandsSeparator = ','
+                ThousandsSeparator = ',',
+                AbbreviateNumbers = false,
+                AbbreviateThreshold = 1000,
+                AbbreviationDecimals = 1,
+                AbbreviationDecimalSeparator = '.',
+                ThousandUnit = "هزار",
+                MillionUnit = "میلیون",
+                BillionUnit = "میلیارد",
+                TrillionUnit = "تریلیون"
             };
         }
 
@@ -193,9 +230,111 @@ namespace PersianUGUI
             return (isNegative ? "-" : string.Empty) + sb;
         }
 
-        // ---------------------------------------------------------------
-        // ساختار خوشه (Cluster)
-        // ---------------------------------------------------------------
+        /// <summary>
+        /// وقتی یه جا `Options options = default` پاس داده بشه (نه Options.Default)،
+        /// فیلدهای رشته‌ای/کاراکتری صفر/خالی می‌مونن. این تابع مطمئن می‌شه همیشه
+        /// مقدار منطقی برای جداکننده‌ها و برچسب‌های واحد وجود داره.
+        /// </summary>
+        private static Options WithDefaults(Options o)
+        {
+            if (o.ThousandsSeparator == default) o.ThousandsSeparator = ',';
+            if (o.AbbreviateThreshold <= 0) o.AbbreviateThreshold = 1000;
+            if (o.AbbreviationDecimalSeparator == default) o.AbbreviationDecimalSeparator = '.';
+            if (string.IsNullOrEmpty(o.ThousandUnit)) o.ThousandUnit = "هزار";
+            if (string.IsNullOrEmpty(o.MillionUnit)) o.MillionUnit = "میلیون";
+            if (string.IsNullOrEmpty(o.BillionUnit)) o.BillionUnit = "میلیارد";
+            if (string.IsNullOrEmpty(o.TrillionUnit)) o.TrillionUnit = "تریلیون";
+            return o;
+        }
+
+        /// <summary>
+        /// یه رشته‌ی رقمی (لاتین/فارسی/عربی) رو به مقدار عددی تبدیل می‌کنه.
+        /// برای اعداد خیلی بزرگ از double استفاده می‌شه که فقط برای تشخیصِ
+        /// آستانه و محاسبه‌ی مقیاسِ کوتاه‌سازی کافیه (نه محاسبات مالیِ دقیق).
+        /// </summary>
+        private static bool TryParseDigitsToDouble(string s, out double value)
+        {
+            value = 0;
+            if (string.IsNullOrEmpty(s)) return false;
+
+            foreach (char ch in s)
+            {
+                int d;
+                if (ch >= '0' && ch <= '9') d = ch - '0';
+                else if (ch >= '\u06F0' && ch <= '\u06F9') d = ch - '\u06F0';
+                else if (ch >= '\u0660' && ch <= '\u0669') d = ch - '\u0660';
+                else return false;
+
+                value = value * 10 + d;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// عدد کوتاه‌شده (بخش رقمی + برچسب واحد) رو برای یک مقدار مشخص می‌سازه.
+        /// اگه مقدار کمتر از آستانه باشه، خروجی null برمی‌گرده (یعنی کوتاه‌سازی لازم نیست).
+        /// </summary>
+        private static (string numberPart, string unit) BuildAbbreviation(double numValue, Options options)
+        {
+            double divisor;
+            string unit;
+
+            if (numValue >= 1_000_000_000_000d) { divisor = 1_000_000_000_000d; unit = options.TrillionUnit; }
+            else if (numValue >= 1_000_000_000d) { divisor = 1_000_000_000d; unit = options.BillionUnit; }
+            else if (numValue >= 1_000_000d) { divisor = 1_000_000d; unit = options.MillionUnit; }
+            else { divisor = 1_000d; unit = options.ThousandUnit; }
+
+            double shortValue = numValue / divisor;
+            int decimals = System.Math.Max(0, options.AbbreviationDecimals);
+
+            string numberPart = shortValue.ToString("F" + decimals, System.Globalization.CultureInfo.InvariantCulture);
+
+            // حذف صفرهای اضافیِ اعشار: "2.0" -> "2"، "1.50" -> "1.5"
+            if (decimals > 0 && numberPart.Contains('.'))
+                numberPart = numberPart.TrimEnd('0').TrimEnd('.');
+
+            char decSep = options.AbbreviationDecimalSeparator == default ? '.' : options.AbbreviationDecimalSeparator;
+            if (decSep != '.') numberPart = numberPart.Replace('.', decSep);
+
+            return (numberPart, unit);
+        }
+
+        /// <summary>
+        /// نسخه‌ی مستقلِ کوتاه‌سازیِ عدد (بدون درگیر کردنِ کل موتور shaping) —
+        /// برای جاهایی مثل لیدربورد یا شمارنده که فقط خروجیِ متنیِ ساده لازمه.
+        /// مثال: Abbreviate(1500000) => "1.5 میلیون"
+        /// </summary>
+        public static string Abbreviate(double value, Options options = default)
+        {
+            options = WithDefaults(options);
+            bool isNegative = value < 0;
+            double abs = System.Math.Abs(value);
+
+            if (abs < options.AbbreviateThreshold)
+            {
+                string plain = ((long)System.Math.Round(abs)).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                if (options.AutoFormatNumbers) plain = GroupRawDigits(plain, options.ThousandsSeparator);
+                if (options.ConvertDigitsToPersian)
+                {
+                    var conv = new StringBuilder(plain.Length);
+                    foreach (var ch in plain) conv.Append((ch >= '0' && ch <= '9') ? ToPersianDigit(ch) : ch);
+                    plain = conv.ToString();
+                }
+                return (isNegative ? "-" : string.Empty) + plain;
+            }
+
+            var (numberPart, unit) = BuildAbbreviation(abs, options);
+            if (options.ConvertDigitsToPersian)
+            {
+                var conv = new StringBuilder(numberPart.Length);
+                foreach (var ch in numberPart) conv.Append((ch >= '0' && ch <= '9') ? ToPersianDigit(ch) : ch);
+                numberPart = conv.ToString();
+            }
+
+            return (isNegative ? "-" : string.Empty) + numberPart + (string.IsNullOrEmpty(unit) ? string.Empty : " " + unit);
+        }
+
+
         private enum ClusterKind { PersianLetter, LtrRun, Tag, Other }
 
         private class Cluster
@@ -217,7 +356,11 @@ namespace PersianUGUI
         {
             if (string.IsNullOrEmpty(input)) return input;
 
-            string cacheKey = $"{(options.ConvertDigitsToPersian ? 1 : 0)}{(options.AutoFormatNumbers ? 1 : 0)}{options.ThousandsSeparator}|{input}";
+            string cacheKey =
+                $"{(options.ConvertDigitsToPersian ? 1 : 0)}" +
+                $"{(options.AutoFormatNumbers ? 1 : 0)}{options.ThousandsSeparator}" +
+                $"{(options.AbbreviateNumbers ? 1 : 0)}{options.AbbreviateThreshold}{options.AbbreviationDecimals}{options.AbbreviationDecimalSeparator}" +
+                $"{options.ThousandUnit}{options.MillionUnit}{options.BillionUnit}{options.TrillionUnit}|{input}";
             if (_cache.TryGetValue(cacheKey, out var cached))
                 return cached;
 
@@ -241,8 +384,48 @@ namespace PersianUGUI
         // ---------------------------------------------------------------
         // مرحله ۱: تبدیل رشته به خوشه‌ها
         // ---------------------------------------------------------------
+
+        /// <summary>
+        /// یک کلمه‌ی ساده‌ی فارسی (مثل برچسبِ واحدِ «میلیون») رو مستقیم به
+        /// خوشه‌های PersianLetter تبدیل می‌کنه و به لیست اضافه می‌کنه. برای
+        /// درجِ برچسبِ واحد بعد از کوتاه‌سازیِ عدد استفاده می‌شه.
+        /// </summary>
+        private static void TokenizeWordAsLetters(string word, List<Cluster> clusters)
+        {
+            int i = 0;
+            int len = word.Length;
+            while (i < len)
+            {
+                char c = word[i];
+
+                if (c == 'ل' && i + 1 < len && LamAlef.ContainsKey(word[i + 1]))
+                {
+                    clusters.Add(new Cluster { Kind = ClusterKind.PersianLetter, BaseLetter = c, JoinType = JoinType.Dual, Emit = "LAM_ALEF:" + word[i + 1] });
+                    i += 2;
+                    continue;
+                }
+
+                if (Table.ContainsKey(c))
+                {
+                    int diacriticEnd = i + 1;
+                    while (diacriticEnd < len && IsDiacritic(word[diacriticEnd])) diacriticEnd++;
+                    string trailingDiacritics = diacriticEnd > i + 1 ? word.Substring(i + 1, diacriticEnd - i - 1) : string.Empty;
+
+                    var forms = Table[c];
+                    clusters.Add(new Cluster { Kind = ClusterKind.PersianLetter, BaseLetter = c, JoinType = forms.Type, Emit = trailingDiacritics });
+                    i = diacriticEnd;
+                    continue;
+                }
+
+                clusters.Add(new Cluster { Kind = ClusterKind.Other, Emit = c.ToString() });
+                i++;
+            }
+        }
+        // ---------------------------------------------------------------
         private static List<Cluster> Tokenize(string input, Options options)
         {
+            options = WithDefaults(options);
+
             var clusters = new List<Cluster>(input.Length);
             int i = 0;
             int len = input.Length;
@@ -279,11 +462,39 @@ namespace PersianUGUI
                     }
 
                     string raw = input.Substring(start, i - start);
+                    bool isPureNumber = !sawSeparator && !sawLatin;
+
+                    // کوتاه‌سازیِ اعداد بزرگ (اولویت بالاتر از فرمت هزارگان معمولی):
+                    // فقط روی بلوک‌های رقمِ خالص و وقتی مقدار از آستانه بیشتر باشه.
+                    if (options.AbbreviateNumbers && isPureNumber &&
+                        TryParseDigitsToDouble(raw, out double numValue) &&
+                        numValue >= options.AbbreviateThreshold)
+                    {
+                        var (numberPart, unit) = BuildAbbreviation(numValue, options);
+
+                        if (options.ConvertDigitsToPersian)
+                        {
+                            var convNum = new StringBuilder(numberPart.Length);
+                            foreach (var ch in numberPart)
+                                convNum.Append((ch >= '0' && ch <= '9') ? ToPersianDigit(ch) : ch);
+                            numberPart = convNum.ToString();
+                        }
+
+                        clusters.Add(new Cluster { Kind = ClusterKind.LtrRun, Emit = numberPart });
+
+                        if (!string.IsNullOrEmpty(unit))
+                        {
+                            clusters.Add(new Cluster { Kind = ClusterKind.Other, Emit = " " });
+                            TokenizeWordAsLetters(unit, clusters);
+                        }
+
+                        continue;
+                    }
 
                     // فرمت خودکار: فقط وقتی بلوک، رقم خالصه (بدون جداکننده‌ی
                     // دستی و بدون حرف لاتین قاطی‌شده مثل "v2" یا کد پستی و ...)
-                    if (options.AutoFormatNumbers && !sawSeparator && !sawLatin)
-                        raw = GroupRawDigits(raw, options.ThousandsSeparator == default ? ',' : options.ThousandsSeparator);
+                    if (options.AutoFormatNumbers && isPureNumber)
+                        raw = GroupRawDigits(raw, options.ThousandsSeparator);
 
                     if (options.ConvertDigitsToPersian)
                     {

@@ -20,6 +20,14 @@ namespace PersianUGUI.Editor
         private SerializedProperty _convertDigitsProp;
         private SerializedProperty _autoFormatNumbersProp;
         private SerializedProperty _separatorProp;
+        private SerializedProperty _abbreviateNumbersProp;
+        private SerializedProperty _abbreviateThresholdProp;
+        private SerializedProperty _abbreviationDecimalsProp;
+        private SerializedProperty _abbreviationDecimalSeparatorProp;
+        private SerializedProperty _thousandUnitProp;
+        private SerializedProperty _millionUnitProp;
+        private SerializedProperty _billionUnitProp;
+        private SerializedProperty _trillionUnitProp;
 
         private void OnEnable()
         {
@@ -28,6 +36,14 @@ namespace PersianUGUI.Editor
             _convertDigitsProp = serializedObject.FindProperty("convertDigitsToPersian");
             _autoFormatNumbersProp = serializedObject.FindProperty("autoFormatNumbers");
             _separatorProp = serializedObject.FindProperty("thousandsSeparator");
+            _abbreviateNumbersProp = serializedObject.FindProperty("abbreviateNumbers");
+            _abbreviateThresholdProp = serializedObject.FindProperty("abbreviateThreshold");
+            _abbreviationDecimalsProp = serializedObject.FindProperty("abbreviationDecimals");
+            _abbreviationDecimalSeparatorProp = serializedObject.FindProperty("abbreviationDecimalSeparator");
+            _thousandUnitProp = serializedObject.FindProperty("thousandUnit");
+            _millionUnitProp = serializedObject.FindProperty("millionUnit");
+            _billionUnitProp = serializedObject.FindProperty("billionUnit");
+            _trillionUnitProp = serializedObject.FindProperty("trillionUnit");
         }
 
         public override void OnInspectorGUI()
@@ -51,6 +67,24 @@ namespace PersianUGUI.Editor
             if (_autoFormatNumbersProp.boolValue)
                 EditorGUILayout.HelpBox("هر عدد خالصی که مستقیم توی متن خام بنویسی، خودکار جدا می‌شه. نیازی به تایپ کاما یا هیچ نشونه‌ی خاصی نیست.", MessageType.Info);
 
+            EditorGUILayout.Space(4);
+            EditorGUILayout.LabelField("کوتاه‌سازی اعداد بزرگ", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(_abbreviateNumbersProp, new GUIContent("کوتاه‌سازی فعال"));
+
+            using (new EditorGUI.DisabledScope(!_abbreviateNumbersProp.boolValue))
+            {
+                EditorGUILayout.PropertyField(_abbreviateThresholdProp, new GUIContent("آستانه (از این عدد به بعد)"));
+                EditorGUILayout.PropertyField(_abbreviationDecimalsProp, new GUIContent("تعداد رقم اعشار"));
+                EditorGUILayout.PropertyField(_abbreviationDecimalSeparatorProp, new GUIContent("جداکننده اعشار"));
+                EditorGUILayout.PropertyField(_thousandUnitProp, new GUIContent("برچسب هزار"));
+                EditorGUILayout.PropertyField(_millionUnitProp, new GUIContent("برچسب میلیون"));
+                EditorGUILayout.PropertyField(_billionUnitProp, new GUIContent("برچسب میلیارد"));
+                EditorGUILayout.PropertyField(_trillionUnitProp, new GUIContent("برچسب تریلیون"));
+            }
+
+            if (_abbreviateNumbersProp.boolValue)
+                EditorGUILayout.HelpBox("مثلاً 1000000 می‌شه \"1 میلیون\". اگه عدد از آستانه کمتر باشه، دست‌نخورده می‌مونه (یا با فرمت هزارگان معمولی، اگه اونم فعال باشه).", MessageType.Info);
+
             serializedObject.ApplyModifiedProperties();
 
             EditorGUILayout.Space(8);
@@ -62,7 +96,15 @@ namespace PersianUGUI.Editor
                 {
                     ConvertDigitsToPersian = _convertDigitsProp.boolValue,
                     AutoFormatNumbers = _autoFormatNumbersProp.boolValue,
-                    ThousandsSeparator = (char)_separatorProp.intValue
+                    ThousandsSeparator = (char)_separatorProp.intValue,
+                    AbbreviateNumbers = _abbreviateNumbersProp.boolValue,
+                    AbbreviateThreshold = _abbreviateThresholdProp.longValue,
+                    AbbreviationDecimals = _abbreviationDecimalsProp.intValue,
+                    AbbreviationDecimalSeparator = (char)_abbreviationDecimalSeparatorProp.intValue,
+                    ThousandUnit = _thousandUnitProp.stringValue,
+                    MillionUnit = _millionUnitProp.stringValue,
+                    BillionUnit = _billionUnitProp.stringValue,
+                    TrillionUnit = _trillionUnitProp.stringValue
                 };
                 string shaped = PersianTextEngine.Process(raw, options);
 
