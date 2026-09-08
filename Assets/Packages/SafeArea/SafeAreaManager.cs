@@ -70,12 +70,52 @@ namespace UI.SafeArea
 
             if (TryAutoFixHierarchy())
             {
-                // این نمونه در حال جابه‌جایی/غیرفعال‌سازی است؛ کار دیگری لازم نیست.
+                return;
+            }
+
+            if (TryAutoRemoveIfDuplicate())
+            {
                 return;
             }
 
             _canvas = GetComponentInParent<Canvas>();
             ApplySafeArea(force: true);
+        }
+
+        /// <summary>
+        /// اگر یک SafeAreaManager فعالِ دیگر بالاتر از این آبجکت (در همان Canvas) وجود داشته باشد،
+        /// این نمونه اضافی و مضر است (باعث جمع‌شدنِ تصاعدی/Compounding می‌شود) و باید حذف شود.
+        /// فقط یک SafeAreaManager — روی کانتینر بیرونی SafeArea — باید در هر Canvas فعال باشد.
+        /// </summary>
+        private bool TryAutoRemoveIfDuplicate()
+        {
+            if (!_autoFixHierarchy) return false;
+
+            Transform t = transform.parent;
+            while (t != null)
+            {
+                SafeAreaManager ancestor = t.GetComponent<SafeAreaManager>();
+                if (ancestor != null && ancestor.enabled)
+                {
+                    Debug.LogWarning(
+                        $"<color=#FF9800>[SafeAreaManager] 🔧 اصلاح خودکار: روی '{name}' یک SafeAreaManager تودرتو (داخل '{ancestor.name}') پیدا شد. " +
+                        $"چون این باعث جمع‌شدن تصاعدی و به‌هم‌ریختگی چیدمان می‌شود، این نمونه‌ی اضافی به‌صورت خودکار حذف شد. " +
+                        $"فقط باید یک SafeAreaManager — روی کانتینر بیرونی 'SafeArea' — در هر Canvas فعال باشد.</color>",
+                        this);
+
+                    _autoFixHandledThisInstance = true;
+                    enabled = false;
+                    SafeDestroySelf();
+                    return true;
+                }
+
+                Canvas canvasHere = t.GetComponent<Canvas>();
+                if (canvasHere != null && canvasHere.isRootCanvas) break; // فراتر از Canvas خودش نرو
+
+                t = t.parent;
+            }
+
+            return false;
         }
 
         private void OnRectTransformDimensionsChange()
@@ -318,10 +358,19 @@ namespace UI.SafeArea
         {
             if (_rectTransform == null) _rectTransform = GetComponent<RectTransform>();
             if (_canvas == null) _canvas = GetComponentInParent<Canvas>();
-            if (!_autoFixHandledThisInstance)
-            {
-                ApplySafeArea(force: true);
-            }
+            if (_autoFixHandledThisInstance) return;
+
+            // تغییر anchorMin/anchorMax همین‌جا مجاز نیست چون داخلش پیام
+            // OnRectTransformDimensionsChange فرستاده می‌شود و یونیتی فرستادن پیام
+            // در حین OnValidate را اجازه نمی‌دهد. برای همین اجرای واقعی را به فریم بعد موکول می‌کنیم.
+            EditorApplication.delayCall += DeferredValidateApply;
+        }
+
+        private void DeferredValidateApply()
+        {
+            EditorApplication.delayCall -= DeferredValidateApply;
+            if (this == null) return; // آبجکت ممکن است تا آن زمان حذف شده باشد
+            ApplySafeArea(force: true);
         }
 #endif
     }
