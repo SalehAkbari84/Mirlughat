@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "unity-mcp-mirlughat": {
+      "type": "http",
+      "url": "http://127.0.0.1:8080/mcp",
+      "note": "MCP for Unity v10.1.2 installed in the Mirlughat project (Packages/manifest.json). Only connect while the Unity Editor has Mirlughat open — the session always binds to whichever project is open. NEVER have both projects' editors running an MCP server at the same time on the same port."
+    }
+  }
+}

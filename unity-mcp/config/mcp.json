@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "unity-mcp": {
+      "type": "http",
+      "url": "http://127.0.0.1:8080/mcp",
+      "note": "MCP for Unity (CoplayDev/unity-mcp) — local HTTP transport, session bound to whichever Unity project is open. Only use while TopDownCarGame is the open project."
+    }
+  }
+}
