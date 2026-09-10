@@ -99,16 +99,38 @@ public static class VFXHelper
 }
 
 /// <summary>
-/// به‌جای Destroy با تایمرِ حدسی، واقعاً صبر می‌کند تا پارتیکل (و فرزندانش) کاملاً تمام شود.
+/// به‌جای Destroy با تایمرِ حدسی، واقعاً صبر می‌کند تا پارتیکل (و فرزندانش) کاملاً تمام شود —
+/// ولی یک سقفِ ایمنیِ زمانی هم دارد: اگر پریفب اشتباهاً Loop روشن داشته باشد (که هیچ‌وقت
+/// خودش تمام نمی‌شود)، بعد از این سقف به‌هرحال نابود می‌شود تا نشتِ حافظه ایجاد نکند.
 /// </summary>
 internal class ParticleAutoDestroy : MonoBehaviour
 {
     ParticleSystem ps;
-    public void Init(ParticleSystem system) => ps = system;
+    float safetyTimeout;
+    float elapsed;
+
+    public void Init(ParticleSystem system, float maxLifetimeSeconds = 15f)
+    {
+        ps = system;
+        safetyTimeout = maxLifetimeSeconds;
+    }
 
     void Update()
     {
+        elapsed += Time.unscaledDeltaTime;
+
         if (ps == null || !ps.IsAlive(true))
+        {
             Destroy(gameObject);
+            return;
+        }
+
+        if (elapsed >= safetyTimeout)
+        {
+            UITween.UITweenDebug.LogWarning(
+                $"[VFXHelper] پارتیکلِ «{gameObject.name}» بعد از {safetyTimeout} ثانیه هنوز IsAlive بود " +
+                "(احتمالاً Loop روی این پریفب روشن است) — برای جلوگیری از نشتِ حافظه، اجباراً نابود شد.");
+            Destroy(gameObject);
+        }
     }
 }

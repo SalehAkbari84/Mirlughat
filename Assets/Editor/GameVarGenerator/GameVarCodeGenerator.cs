@@ -86,7 +86,7 @@ namespace GameSecurity.CodeGen
 
             sb.AppendLine("    // ── متغیرها: دسترسی مستقیم از هر جای پروژه، بدون هیچ واسطه‌ای ──");
             foreach (var v in registry.variables)
-                sb.AppendLine($"    public static {ObscuredTypeName(v.type)} {v.name} = {DefaultLiteral(v.type)};");
+                sb.AppendLine($"    public static {ObscuredTypeName(v.type)} {v.name} = {DefaultLiteral(v)};");
             sb.AppendLine();
 
             sb.AppendLine($"    internal const float ReobscureInterval = {registry.reobscureInterval}f;");
@@ -209,14 +209,32 @@ namespace GameSecurity.CodeGen
             _ => "int"
         };
 
-        private static string DefaultLiteral(GameVarType t) => t switch
+        /// <summary>
+        /// لیترال مقدار اولیه‌ی یک متغیر رو می‌سازه. اگه کاربر مقدار خاصی وارد
+        /// کرده باشه (مثلاً قیمت یه آیتم) همون استفاده می‌شه، وگرنه مقدار
+        /// پیش‌فرض نوع (0 / 0f / false / "" / 0L).
+        /// </summary>
+        private static string DefaultLiteral(GameVarDefinition v)
         {
-            GameVarType.Int => "0",
-            GameVarType.Float => "0f",
-            GameVarType.Bool => "false",
-            GameVarType.String => "\"\"",
-            GameVarType.Long => "0L",
-            _ => "default"
-        };
+            string raw = v.defaultValueRaw;
+
+            switch (v.type)
+            {
+                case GameVarType.Int:
+                    return string.IsNullOrWhiteSpace(raw) ? "0" : raw;
+                case GameVarType.Float:
+                    return (string.IsNullOrWhiteSpace(raw) ? "0" : raw) + "f";
+                case GameVarType.Bool:
+                    return string.IsNullOrWhiteSpace(raw) ? "false" : raw.ToLowerInvariant();
+                case GameVarType.String:
+                    return "\"" + EscapeString(raw ?? "") + "\"";
+                case GameVarType.Long:
+                    return (string.IsNullOrWhiteSpace(raw) ? "0" : raw) + "L";
+                default:
+                    return "default";
+            }
+        }
+
+        private static string EscapeString(string s) => s.Replace("\\", "\\\\").Replace("\"", "\\\"");
     }
 }

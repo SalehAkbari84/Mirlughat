@@ -36,6 +36,13 @@ namespace GameSecurity.CodeGen
         public string name;
         public GameVarType type;
         public bool persistent;
+
+        /// <summary>
+        /// مقدار اولیه به‌صورت متن خام (مثلاً "1000" برای Int، "9.5" برای Float،
+        /// "true"/"false" برای Bool، متن دلخواه برای String). اگر خالی باشد،
+        /// از مقدار پیش‌فرض نوع (0 / 0f / false / "" / 0L) استفاده می‌شود.
+        /// </summary>
+        public string defaultValueRaw;
     }
 
     /// <summary>

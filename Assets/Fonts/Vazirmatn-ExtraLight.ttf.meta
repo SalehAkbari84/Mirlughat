@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 095c1e85ecbbdff4993bdca8e0648e0b
+guid: 3661b0d716945be41a40e50e79aaef6a
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - IRANSans(FaNum)
+  - Vazirmatn
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0

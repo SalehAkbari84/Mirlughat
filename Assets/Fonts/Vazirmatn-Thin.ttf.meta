@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: f51e56d8a32583c4d860fda5f1c0cae7
+guid: 794b4a237fbe528439f47e48e4edecb8
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Dana
+  - Vazirmatn
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0

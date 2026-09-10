@@ -226,6 +226,22 @@ public class SpinnerWheelController : MonoBehaviour
         UpdateSpinUI();
     }
 
+    /// <summary>
+    /// وقتی پنل چرخ‌ونه وسط چرخش بسته میشه (GameObject غیرفعال میشه)، یونیتی خودش
+    /// Coroutine چرخش رو متوقف می‌کنه - اما بدون این متد، isSpinning=true می‌مونه
+    /// و توکنی که مصرف شده بود برنمی‌گشت، برای همین دفعه‌ی بعد دکمه گیر می‌کرد.
+    /// اینجا وضعیت رو تمیز ریست می‌کنیم و چون چرخش کامل نشد، توکن مصرف‌شده برمی‌گرده.
+    /// </summary>
+    private void OnDisable()
+    {
+        if (!isSpinning) return;
+
+        isSpinning = false;
+        remainingSpins += 1; // چون چرخش نصفه‌کاره موند و جایزه‌ای داده نشد، توکن سوخته حساب نمیشه
+        SaveRemainingSpins();
+        SetButtonInteractable(true);
+    }
+
     private void OnSpinButtonClicked()
     {
         if (isSpinning) return;
